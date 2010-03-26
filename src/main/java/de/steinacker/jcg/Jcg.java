@@ -54,45 +54,15 @@ public class Jcg {
             if (cli.hasOption('h')) {
                 help();
             } else {
-                String sourceFile = null;
-                String sourceDir = null;
-                String targetDir = null;
-                boolean recursive = false;
-                String springConfig = "jcg.xml";
-                String transformer = null;
-                if (cli.hasOption("p")) {
-                    final Properties p = new Properties();
-                    p.load(new FileReader(cli.getOptionValue("p")));
-                    transformer = p.getProperty("transformer");
-                    sourceFile = p.getProperty("sourceFile");
-                    sourceDir = p.getProperty("sourceDir");
-                    targetDir = p.getProperty("targetDir");
-                    if (p.contains("recursive"))
-                        recursive = Boolean.parseBoolean(p.getProperty("recursive"));
-                    springConfig = p.getProperty("config", springConfig);
-                }
-                if (cli.hasOption('f'))
-                    sourceFile = cli.getOptionValue('f');
-                if (cli.hasOption('d'))
-                    sourceDir = cli.getOptionValue('d');
-                if (cli.hasOption('t'))
-                    targetDir = cli.getOptionValue('t');
-                if (cli.hasOption('r'))
-                    recursive = true;
-                if (cli.hasOption('c'))
-                    springConfig = cli.getOptionValue('c');
-                if (cli.hasOption('s'))
-                    transformer = cli.getOptionValue('s');
-                if (targetDir == null || (sourceDir == null && sourceFile == null))
+                final JcgParameters params = new JcgParameters(cli);
+                if (params.getTargetDir() == null || (params.getSourceDir() == null && params.getSourceFile() == null))
                     help();
-
-                // Put all important cli-params in a Properties instance:
-                final ApplicationContext context = new FileSystemXmlApplicationContext(springConfig);
+                final ApplicationContext context = new FileSystemXmlApplicationContext(params.getSpringConfig());
                 final JcgController controller = context.getBean(JcgController.class);
-                if (sourceFile != null)
-                    controller.invoke(transformer, sourceFile, targetDir);
+                if (params.getSourceFile() != null)
+                    controller.invoke(params.getSelector(), params.getSourceFile(), params.getTargetDir());
                 else
-                    controller.invoke(transformer, sourceDir, recursive, targetDir);
+                    controller.invoke(params.getSelector(), params.getSourceDir(), params.isRecursive(),  params.getTargetDir());
             }
         } catch (Throwable t) {
             t.printStackTrace();

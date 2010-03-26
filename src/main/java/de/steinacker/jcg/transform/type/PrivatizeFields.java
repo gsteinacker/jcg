@@ -32,7 +32,11 @@ public final class PrivatizeFields extends AbstractFieldTransformer implements T
     @Override
     protected Field transformField(final Field field, final Context context) {
         final Field finalField;
-        final Set<FieldModifier> modifiers = field.getModifiers();
+        final Set<FieldModifier> modifiers = field.getModifiers().isEmpty()
+                ? EnumSet.noneOf(FieldModifier.class)
+                : EnumSet.copyOf(field.getModifiers());
+        modifiers.remove(FieldModifier.PROTECTED);
+        modifiers.remove(FieldModifier.PUBLIC);        
         if (!modifiers.contains(FieldModifier.PRIVATE)) {
             final Set<FieldModifier> newModifiers = modifiers.isEmpty()
                     ? EnumSet.noneOf(FieldModifier.class)

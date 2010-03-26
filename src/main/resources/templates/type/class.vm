@@ -1,0 +1,29 @@
+$codeUtil.fileComment()
+package $type.getName().getPackage();
+
+#foreach( $import in $type.imports )
+import $import;
+#end
+
+$codeUtil.toJavaDocComment($type.comment, 80)
+#foreach($annotation in $type.annotations)
+    $annotation
+#end
+$type.toString() {
+
+#foreach( $attribute in $type.fields )
+    $attribute.toString();
+#end
+
+#foreach( $method in $type.methods )
+    #if( $method.abstract)
+        $method.toString();
+    #else
+        $method.toString() {
+    // TODO: method body
+    }
+    #end
+
+#end
+
+}

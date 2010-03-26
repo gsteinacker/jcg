@@ -1,0 +1,34 @@
+<xsd:schema targetNamespace=""
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified">
+
+    <xsd:element name="glossary">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="language" minOccurs="1" maxOccurs="1"/>
+                <xsd:element ref="entry" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="language">
+        <xsd:complexType>
+            <xsd:attribute name="source" type="xsd:language"/>
+            <xsd:attribute name="target" type="xsd:language"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="entry">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="term" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+                <xsd:element name="pluralTerm" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+                <xsd:element name="translation" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+                <xsd:element name="pluralTranslation" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+                <xsd:element name="shortDescription" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+                <xsd:element name="longDescription" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>

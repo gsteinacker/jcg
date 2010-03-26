@@ -1,0 +1,46 @@
+<glossary>
+    <language source="de" target="en"/>
+    <entry>
+        <term>Warenkorb</term>
+        <pluralTerm>Warenkörbe</pluralTerm>
+        <translation>shopping cart</translation>
+        <pluralTranslation>shopping carts</pluralTranslation>
+        <shortDescription>Ein Warenkorb in einem Shop-System.</shortDescription>
+        <longDescription>Ein Warenkorb in einem Shop-System. Ein Warenkorb in einem Shop-System.
+            Ein Warenkorb in einem Shop-System.
+        </longDescription>
+    </entry>
+    <entry>
+        <term>Kunde</term>
+        <pluralTerm>Kunden</pluralTerm>
+        <translation>customer</translation>
+        <pluralTranslation>customers</pluralTranslation>
+        <shortDescription>Ein Kunde.</shortDescription>
+        <longDescription>Ein Kunde. Ein Kunde. Ein Kunde. Ein Kunde.</longDescription>
+    </entry>
+    <entry>
+        <term>Kundennummer</term>
+        <pluralTerm>Kundennummern</pluralTerm>
+        <translation>customer number</translation>
+        <pluralTranslation>customer numbers</pluralTranslation>
+        <shortDescription>Die eindeutige Kundennummer eines Kunden.</shortDescription>
+        <longDescription>Die eindeutige Kundennummer eines Kunden. Die eindeutige Kundennummer eines Kunden.
+        </longDescription>
+    </entry>
+    <entry>
+        <term>Artikel</term>
+        <pluralTerm>Artikel</pluralTerm>
+        <translation>item</translation>
+        <pluralTranslation>items</pluralTranslation>
+        <shortDescription>Artikel.</shortDescription>
+        <longDescription>Ein Artikel. Ein Artikel. Ein Artikel. Ein Artikel.</longDescription>
+    </entry>
+    <entry>
+        <term>Währung</term>
+        <pluralTerm>Währungen</pluralTerm>
+        <translation>currency</translation>
+        <pluralTranslation>currencies</pluralTranslation>
+        <shortDescription>Eine Währung.</shortDescription>
+        <longDescription>Währung eines Preises.</longDescription>
+    </entry>
+</glossary>

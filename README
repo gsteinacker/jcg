@@ -17,17 +17,18 @@ Release 0.1: Basics
 11        1     Implement generic types.
 12        1     Implement a FileGenerator
 13        2     Removed unused code
+14        2     Refactoring of the Rules and Predicates.
 
 Release 0.2: More transformers + Comments
+             Release 0.2 is intended to be usable to generate simple domain models. In the following
+             releases, the feature-set will be completed, so more interesting things can be generated.
+
 20        2     Write a transformer to add different kinds of Builders
 21        2     Implement comments.
 22        2     Write more transformers to add interfaces, abstract classes (so you are able to add
                 your own stuff to a generated class), enums and annotation types.
 23        2     Write and use a configurable CodeFormatter. Parameter-lists, for example, do not
                 yet consider line-widths right now.
-
-Release 0.2 is intended to be usable to generate simple domain models. In the following releases,
-the feature-set will be completed, so more interesting things can be generated.
 
 Release 0.3: Complete the feature set
 30        3     Parse method bodies. In contrast to issue 01, method bodies are not only part of
@@ -37,12 +38,15 @@ Release 0.3: Complete the feature set
 32        3     Write JavaDocs
 33        3     Write unit tests
 
+Release 0.4: Refactoring
+40        3     Simplify the configuration of the transformers, for example by using a DSL or
+                Spring namespaces.
+
 Release 0.5: Support manual changes of generated code
 50        3     Implementing merging of models with focus on merging manual changes into generated code.
 
 Later:
 60        4     Add Transformers + Generators for XML/XSD/WSDL
-70        4     Simplify the configuration of the transformers, for example using a DSL or Spring namespaces.
 80        5     Use Xtext (http://www.eclipse.org/Xtext/) to generate more sophisticated things.
 
 

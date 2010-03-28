@@ -8,10 +8,7 @@ import de.steinacker.jcg.model.Model;
 import de.steinacker.jcg.model.Type;
 import org.apache.log4j.Logger;
 
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
+import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -38,9 +35,9 @@ public final class JavaFileParser extends AbstractParser {
      * @return Model the Model created by the Parser
      */
     @Override
-    public Model parse(final String sourceFile) {
+    public Model parse(final String sourceFile, final String binDir) {
         LOG.info("Parsing sourceFile " + sourceFile + "...");
-        final Model model = parseFiles(Collections.singletonList(new File(sourceFile)));
+        final Model model = parseFiles(Collections.singletonList(new File(sourceFile)), binDir);
         LOG.info("Done.");
         return model;
     }
@@ -54,9 +51,9 @@ public final class JavaFileParser extends AbstractParser {
      * @return Model the Model created by the Parser
      */
     @Override
-    public Model parse(final String sourceDir, final boolean recursive) {
+    public Model parse(final String sourceDir, final boolean recursive, final String binDir) {
         LOG.info((recursive ? "Recursively parsing directory " : "Parsing directory ") + sourceDir);
-        final Model model = parseFiles(getFilesAsList(sourceDir, recursive));
+        final Model model = parseFiles(getFilesAsList(sourceDir, recursive), binDir);
 
         return model;
     }
@@ -67,12 +64,18 @@ public final class JavaFileParser extends AbstractParser {
      * @param files Java source code
      * @return Model
      */
-    private Model parseFiles(final List<File> files) {
+    private Model parseFiles(final List<File> files, final String binDir) {
         LOG.info(files.size() + " files found.");
         final Model model;
         if (files.size() > 0) {
             // Get a new instance of the standard file manager implementation
             final StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+            // Set the output directory of the compiler
+            try {
+                fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(new File(binDir)));
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Illegal parameter binDir: " + e.getMessage(), e);
+            }
             // Get the list of java file objects
             Iterable<? extends JavaFileObject> compilationUnits1 = fileManager
                     .getJavaFileObjectsFromFiles(files);

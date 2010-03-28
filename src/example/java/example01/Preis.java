@@ -10,7 +10,7 @@ import java.util.Currency;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public class Preis {
+class Preis {
     long preis;
     Currency währung;
 }

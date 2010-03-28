@@ -37,7 +37,7 @@
                 <bean class="de.steinacker.jcg.transform.translation.TypeTranslator">
                     <constructor-arg ref="glossary"/>
                 </bean>
-                <bean class="de.steinacker.jcg.transform.type.FinalizeClass"/>
+                <bean class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
                 <bean class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
                 <bean class="de.steinacker.jcg.transform.type.AddConstructors"/>
                 <bean class="de.steinacker.jcg.transform.type.AddGetters"/>
@@ -53,7 +53,7 @@
                 <bean class="de.steinacker.jcg.transform.translation.TypeTranslator">
                     <constructor-arg ref="glossary"/>
                 </bean>
-                <bean class="de.steinacker.jcg.transform.type.FinalizeClass"/>
+                <bean class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
                 <bean class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
                 <bean class="de.steinacker.jcg.transform.type.AddConstructors"/>
                 <bean class="de.steinacker.jcg.transform.type.AddGetters"/>

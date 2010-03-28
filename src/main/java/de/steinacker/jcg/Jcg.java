@@ -9,9 +9,6 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import java.io.FileReader;
-import java.util.Properties;
-
 /**
  * The main class to verify java files using custom annotation processor. The
  * files to be verified can be supplied to this class as comma-separated
@@ -32,6 +29,7 @@ public class Jcg {
         options.addOption("r", "recursive", false, "Recursively traverse the source directory. Default is false");
         options.addOption("c", "config", true, "The configuration file used to initialize jcg.");
         options.addOption("p", "propertyFile", true, "The property-file used to configure jcg. Properties contained in this file are overwritten by other parameters.");
+        options.addOption("b", "bin", true, "The directory, where output of the compiler (that is, .class files) is written to. By default, this is './bin'");
     }
 
 
@@ -54,15 +52,34 @@ public class Jcg {
             if (cli.hasOption('h')) {
                 help();
             } else {
-                final JcgParameters params = new JcgParameters(cli);
+                final JcgParameters params;
+                if (cli.hasOption('p')) {
+                    params = new JcgParameters(cli.getOptionValue('p'));
+                } else {
+                    params = new JcgParameters();
+                    if (cli.hasOption('f'))
+                        params.setSourceFile(cli.getOptionValue('f'));
+                        if (cli.hasOption('d'))
+                            params.setSourceDir(cli.getOptionValue('d'));
+                        if (cli.hasOption('t'))
+                            params.setTargetDir(cli.getOptionValue('t'));
+                        if (cli.hasOption('r'))
+                            params.setRecursive(true);
+                        if (cli.hasOption('c'))
+                            params.setSpringConfig(cli.getOptionValue('c'));
+                        if (cli.hasOption('s'))
+                            params.setSelector(cli.getOptionValue('s'));
+                        if (cli.hasOption('b'))
+                            params.setBinDir(cli.getOptionValue('b'));
+                }
                 if (params.getTargetDir() == null || (params.getSourceDir() == null && params.getSourceFile() == null))
                     help();
                 final ApplicationContext context = new FileSystemXmlApplicationContext(params.getSpringConfig());
                 final JcgController controller = context.getBean(JcgController.class);
                 if (params.getSourceFile() != null)
-                    controller.invoke(params.getSelector(), params.getSourceFile(), params.getTargetDir());
+                    controller.invoke(params.getSelector(), params.getSourceFile(), params.getTargetDir(), params.getBinDir());
                 else
-                    controller.invoke(params.getSelector(), params.getSourceDir(), params.isRecursive(),  params.getTargetDir());
+                    controller.invoke(params.getSelector(), params.getSourceDir(), params.isRecursive(),  params.getTargetDir(), params.getBinDir());
             }
         } catch (Throwable t) {
             t.printStackTrace();

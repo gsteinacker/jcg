@@ -1,7 +1,5 @@
 package de.steinacker.jcg;
 
-import org.apache.commons.cli.CommandLine;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -9,22 +7,19 @@ import java.util.Properties;
 /**
  * Parameters used by Jcg.
  */
-public final class JcgParameters {
+final class JcgParameters {
     private String sourceFile = null;
     private String sourceDir = null;
     private String targetDir = null;
     private boolean recursive = false;
     private String springConfig = "jcg.xml";
     private String selector = null;
+    private String binDir = "./bin";
 
-    public JcgParameters (final CommandLine cli) throws IOException {
-        if (cli.hasOption("p")) {
-            mergeWithProperties(cli.getOptionValue('p'));
-        }
-        mergeWithCliOptions(cli);
+    public JcgParameters () {
     }
 
-    private void mergeWithProperties(final String propertyFile) throws IOException {
+    public JcgParameters(final String propertyFile) throws IOException {
         final Properties p = new Properties();
         p.load(new FileReader(propertyFile));
         selector = p.getProperty("selector");
@@ -32,25 +27,11 @@ public final class JcgParameters {
         sourceDir = p.getProperty("sourceDir");
         targetDir = p.getProperty("targetDir");
         selector = p.getProperty("selector");
+        binDir = p.getProperty("binDir", binDir);
         if (p.containsKey("recursive")) {
             recursive = Boolean.parseBoolean(p.getProperty("recursive"));
         }
         springConfig = p.getProperty("config", springConfig);
-    }
-
-    private void mergeWithCliOptions(final CommandLine cli) {
-        if (cli.hasOption('f'))
-            sourceFile = cli.getOptionValue('f');
-        if (cli.hasOption('d'))
-            sourceDir = cli.getOptionValue('d');
-        if (cli.hasOption('t'))
-            targetDir = cli.getOptionValue('t');
-        if (cli.hasOption('r'))
-            recursive = true;
-        if (cli.hasOption('c'))
-            springConfig = cli.getOptionValue('c');
-        if (cli.hasOption('s'))
-            selector = cli.getOptionValue('s');
     }
 
     public String getSourceFile() {
@@ -99,5 +80,13 @@ public final class JcgParameters {
 
     public void setSelector(final String selector) {
         this.selector = selector;
+    }
+
+    public String getBinDir() {
+        return binDir;
+    }
+
+    public void setBinDir(final String binDir) {
+        this.binDir = this.binDir;
     }
 }

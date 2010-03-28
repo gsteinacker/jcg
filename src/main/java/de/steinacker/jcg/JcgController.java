@@ -39,9 +39,10 @@ public final class JcgController {
 
     public void invoke(final String selector,
                        final String sourceFile,
-                       final String targetDir) throws JcgException {
+                       final String targetDir,
+                       final String binDir) throws JcgException {
         LOG.info("Parsing...");
-        final Model model = parser.parse(sourceFile);
+        final Model model = parser.parse(sourceFile, binDir);
         LOG.info("Transforming...");
         final Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("ctx-selector-param", selector);
@@ -55,9 +56,10 @@ public final class JcgController {
     public void invoke(final String selector,
                        final String sourceDir,
                        final boolean recursive,
-                       final String targetDir) throws JcgException {
+                       final String targetDir,
+                       final String binDir) throws JcgException {
         LOG.info("Parsing...");
-        final Model model = parser.parse(sourceDir, recursive);
+        final Model model = parser.parse(sourceDir, recursive, binDir);
         LOG.info("Transforming...");
         final Map<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("ctx-selector-param", selector);

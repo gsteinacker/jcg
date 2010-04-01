@@ -5,6 +5,9 @@
 package de.steinacker.jcg.transform.type;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,29 +20,34 @@ import java.util.List;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public final class TypeTransformerChain implements TypeTransformer {
+public final class TypeTransformerChain implements TypeTransformer, ApplicationContextAware {
     private static final Logger LOG = Logger.getLogger(TypeTransformerChain.class);
 
-    private final List<TypeTransformer> chain;
+    private String name;
+    private List<String> chain;
+    private transient volatile ApplicationContext context;
 
-    public TypeTransformerChain(final TypeTransformer... chain) {
-        this.chain = Arrays.asList(chain);
+
+    public void setTransformers(final List<String> transformers) {
+        chain = new ArrayList<String>(transformers);
     }
 
-    public TypeTransformerChain(final List<? extends TypeTransformer> chain) {
-        this.chain = new ArrayList<TypeTransformer>(chain);
+    public void setName(final String name) {
+        this.name = name;
     }
 
     public String getName() {
-        return "TypeTransformerChain";
+        return name;
     }
 
     @Override
     public TypeMessage transform(final TypeMessage inputMessage) {
         TypeMessage msg = inputMessage;
-        for (final TypeTransformer typeTransformer : chain) {
-            LOG.info("Applying " + typeTransformer.getName());
-            msg = typeTransformer.transform(msg);
+        TypeTransformerProvider provider = context.getBean(TypeTransformerProvider.class);
+        for (final String key : chain) {
+            final TypeTransformer transformer = provider.getTransformer(key);
+            LOG.info("Applying " + transformer.getName());
+            msg = transformer.transform(msg);
         }
         return msg;
     }
@@ -51,5 +59,10 @@ public final class TypeTransformerChain implements TypeTransformer {
         sb.append("{chain=").append(chain);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
+        this.context = applicationContext;
     }
 }

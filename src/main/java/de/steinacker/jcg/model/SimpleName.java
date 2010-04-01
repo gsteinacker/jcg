@@ -14,7 +14,7 @@ import javax.validation.constraints.Pattern;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public final class SimpleName implements CharSequence {
+public final class SimpleName implements CharSequence, Comparable<SimpleName> {
     @NotNull
     @Pattern(regexp = "[a-zA-Z_][a-zA-Z_0-9]*")
     private String name;
@@ -58,5 +58,10 @@ public final class SimpleName implements CharSequence {
     @Override
     public int hashCode() {
         return name.hashCode();
+    }
+
+    @Override
+    public int compareTo(final SimpleName o) {
+        return name.compareTo(o.name);
     }
 }

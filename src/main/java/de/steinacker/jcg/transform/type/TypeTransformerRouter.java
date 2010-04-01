@@ -4,12 +4,11 @@
 
 package de.steinacker.jcg.transform.type;
 
-import de.steinacker.jcg.exception.NoTransformerException;
-import de.steinacker.jcg.transform.predicate.Rule;
+import de.steinacker.jcg.transform.rule.Rule;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Required;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Routes TypeMessages to one of several possible TypeTransformers using a Rule implementation to
@@ -21,22 +20,34 @@ import java.util.Map;
 public final class TypeTransformerRouter implements TypeTransformer {
     private final static Logger LOG = Logger.getLogger(TypeTransformerRouter.class);
 
-    private final Rule<TypeMessage, String> selector;
-    private final Map<String, ? extends TypeTransformer> transformers;
+    private String name;
+    private Rule<TypeMessage, String> selector;
+    private TypeTransformerProvider provider;
 
     /**
-     * @param selector     the rule implementation used to select a transformer
-     * @param transformers the possible transformers.
+     * @param selector the Rule used to select a transformer from the provider.
      */
-    public TypeTransformerRouter(final Rule<TypeMessage, String> selector,
-                                 final Map<String, ? extends TypeTransformer> transformers) {
+    @Required
+    public void setSelector(final Rule<TypeMessage, String> selector) {
         this.selector = selector;
-        this.transformers = new HashMap<String, TypeTransformer>(transformers);
+    }
+
+    /**
+     * @param provider the possible provider.
+     */
+    @Required
+    public void setTransformerProvider(final TypeTransformerProvider provider) {
+        this.provider = provider;
+    }
+
+    @Required
+    public void setName(final String name) {
+        this.name = name;
     }
 
     @Override
     public String getName() {
-        return "TypeTransformerRouter";
+        return name;
     }
 
     /**
@@ -50,15 +61,17 @@ public final class TypeTransformerRouter implements TypeTransformer {
      */
     @Override
     public TypeMessage transform(final TypeMessage message) {
-        final String key = this.selector.apply(message);
-        if (transformers.containsKey(key)) {
-            final TypeTransformer typeTransformer = transformers.get(key);
-            LOG.info("Selecting " + typeTransformer);
-            return typeTransformer.transform(message);
+        TypeMessage tempMessage = message;
+        final List<String> keys = this.selector.apply(message);
+        if (keys.isEmpty()) {
+            LOG.warn("No transformers returned from selector " + selector);
         }
-        final String msg = "No TypeTransformer found for selector=" + key;
-        LOG.error(msg);
-        throw new NoTransformerException(msg);
+        for (final String key : keys) {
+            final TypeTransformer typeTransformer = provider.getTransformer(key);
+            LOG.info("Selecting " + typeTransformer);
+            tempMessage = typeTransformer.transform(tempMessage);
+        }
+        return tempMessage;
     }
 
     @Override

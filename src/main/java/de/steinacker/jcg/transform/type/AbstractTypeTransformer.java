@@ -8,8 +8,6 @@ import de.steinacker.jcg.Context;
 import de.steinacker.jcg.ContextBuilder;
 import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.model.TypeBuilder;
-import de.steinacker.jcg.transform.predicate.Predicate;
-import de.steinacker.jcg.transform.predicate.TruePredicate;
 import de.steinacker.jcg.visitor.AbstractTypeVisitor;
 
 /**
@@ -20,21 +18,12 @@ public abstract class AbstractTypeTransformer extends AbstractTypeVisitor implem
     public static final String CTX_PARAM_TYPEBUILDER = "typeBuilder";
     public static final String CTX_PARAM_TYPE = "type";
 
-    private Predicate<Type> typePredicate = new TruePredicate<Type>();
-
-    public final void setTypePredicate(final Predicate<Type> typePredicate) {
-        this.typePredicate = typePredicate;
-    }
-
     @Override
     public final TypeMessage transform(final TypeMessage message) {
         final Type type = message.getPayload();
-        if (typePredicate.eval(type)) {
-            final Context ctx = createTransformerContext(message).toContext();
-            visit(type, ctx);
-            return new TypeMessage(getTypeBuilder(ctx).toType(), message.getContext());
-        } else
-            return message;
+        final Context ctx = createTransformerContext(message).toContext();
+        visit(type, ctx);
+        return new TypeMessage(getTypeBuilder(ctx).toType(), message.getContext());
     }
 
     /**

@@ -20,7 +20,6 @@ import static de.steinacker.jcg.model.MethodModifier.*;
  * @author Guido Steinacker
  */
 public final class Method implements Annotatable {
-
     @NotNull
     @Valid
     private final SimpleName name;
@@ -38,19 +37,28 @@ public final class Method implements Annotatable {
     @NotNull
     @Valid
     private final List<Parameter> parameters;
+    @NotNull
+    private final String comment;
+    @NotNull
+    private final String methodBody;
+
 
     public Method(final SimpleName name,
                   final List<Annotation> annotations,
                   final Set<MethodModifier> modifiers,
                   final List<QualifiedName> exceptions,
                   final QualifiedName returnTypeName,
-                  final List<Parameter> parameters) {
+                  final List<Parameter> parameters,
+                  final String comment,
+                  final String methodBody) {
         this.name = name;
         this.annotations = Collections.unmodifiableList(new ArrayList<Annotation>(annotations));
         this.modifiers = modifiers;
         this.exceptions = exceptions;
         this.returnTypeName = returnTypeName;
         this.parameters = parameters;
+        this.comment = comment;
+        this.methodBody = methodBody;
     }
 
     public SimpleName getName() {
@@ -86,19 +94,30 @@ public final class Method implements Annotatable {
         return modifiers.contains(modifier);
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public String getMethodBody() {
+        return methodBody;
+    }
+
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Method method = (Method) o;
+        final Method method = (Method) o;
 
         if (!annotations.equals(method.annotations)) return false;
+        if (!comment.equals(method.comment)) return false;
         if (!exceptions.equals(method.exceptions)) return false;
+        if (!methodBody.equals(method.methodBody)) return false;
         if (!modifiers.equals(method.modifiers)) return false;
         if (!name.equals(method.name)) return false;
-        if (!returnTypeName.equals(method.returnTypeName)) return false;
         if (!parameters.equals(method.parameters)) return false;
+        if (returnTypeName != null ? !returnTypeName.equals(method.returnTypeName) : method.returnTypeName != null)
+            return false;
 
         return true;
     }
@@ -109,8 +128,10 @@ public final class Method implements Annotatable {
         result = 31 * result + annotations.hashCode();
         result = 31 * result + modifiers.hashCode();
         result = 31 * result + exceptions.hashCode();
-        result = 31 * result + returnTypeName.hashCode();
+        result = 31 * result + (returnTypeName != null ? returnTypeName.hashCode() : 0);
         result = 31 * result + parameters.hashCode();
+        result = 31 * result + comment.hashCode();
+        result = 31 * result + methodBody.hashCode();
         return result;
     }
 

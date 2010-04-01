@@ -5,6 +5,8 @@
 package de.steinacker.jcg.model;
 
 /**
+ * Possible modifiers of types.
+ *
  * @author Guido Steinacker
  * @version %version: 28 %
  */

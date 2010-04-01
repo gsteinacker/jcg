@@ -4,36 +4,29 @@
 
 package example01;
 
-import de.steinacker.jcg.annotation.ImmutableBean;
+import de.steinacker.jcg.annotation.Immutable;
 import de.steinacker.jcg.annotation.Method;
 import de.steinacker.jcg.annotation.Property;
 
-import static de.steinacker.jcg.annotation.ImmutableBean.Style.CONSTRUCTOR;
+import static de.steinacker.jcg.annotation.Immutable.Style.*;
 
 /**
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-@ImmutableBean(style = CONSTRUCTOR)
+@Immutable(style = CONSTRUCTOR)
 public class ImmutablePerson {
 
-    public static final int INT_42 = 42;
-    public static final int INT_4711;
-
-    static {
-        INT_4711 = 4711;
-    }
-
-    @Property
+    //@Property
     public String firstName;
 
-    @Property
+    //@Property
     public String lastName;
 
     // TODO: Warnung oder Fehler ausgeben? Kopieren?
     private String ignoredAttribute;
 
-    @Method
+    //@Method
     public String getName() {
         return new StringBuilder(firstName)
                 .append(" ")
@@ -41,9 +34,9 @@ public class ImmutablePerson {
                 .toString();
     }
 
-    @Method
+    //@Method
     public int getAge() {
-        return INT_42;
+        return 42;
     }
 
 }

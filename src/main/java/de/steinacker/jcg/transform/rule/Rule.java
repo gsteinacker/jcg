@@ -2,7 +2,9 @@
  * Copyright (c) 2010 by Guido Steinacker
  */
 
-package de.steinacker.jcg.transform.predicate;
+package de.steinacker.jcg.transform.rule;
+
+import java.util.List;
 
 /**
  * @author Guido Steinacker
@@ -14,7 +16,7 @@ public interface Rule<T, R> {
      * Applies a rule on obj and returns a result.
      *
      * @param obj the object the rule is applied to.
-     * @return the resulting value.
+     * @return the resulting values, or an empty list if the rule was not able to find one.
      */
-    public R apply(T obj);
+    public List<R> apply(T obj);
 }

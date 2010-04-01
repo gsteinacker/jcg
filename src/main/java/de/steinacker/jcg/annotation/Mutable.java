@@ -10,13 +10,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation is used to mark source types as mutable beans.
  * @author Guido Steinacker
  * @version %version: 28 %
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-public @interface MutableBean {
+public @interface Mutable {
 
-    public String template() default "MutableBean";
+    public String transformWith() default "Mutable";
 
 }

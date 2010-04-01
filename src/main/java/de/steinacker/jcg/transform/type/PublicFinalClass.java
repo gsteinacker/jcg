@@ -6,11 +6,7 @@ package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.model.TypeBuilder;
-import de.steinacker.jcg.model.TypeModifier;
 import org.apache.log4j.Logger;
-
-import java.util.EnumSet;
-import java.util.Set;
 
 import static de.steinacker.jcg.model.TypeModifier.*;
 
@@ -23,7 +19,7 @@ import static de.steinacker.jcg.model.TypeModifier.*;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public final class PublicFinalClass extends SimpleTypeTransformer {
+public final class PublicFinalClass implements TypeTransformer {
 
     private final static Logger LOG = Logger.getLogger(PublicFinalClass.class);
 
@@ -33,7 +29,7 @@ public final class PublicFinalClass extends SimpleTypeTransformer {
     }
 
     @Override
-    protected TypeMessage doTransform(final TypeMessage message) {
+    public TypeMessage transform(final TypeMessage message) {
         final Type type = message.getPayload();
         if (type.is(ABSTRACT) || (type.is(FINAL) && type.is(PUBLIC))) {
             return message;

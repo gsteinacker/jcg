@@ -7,6 +7,7 @@ package de.steinacker.jcg.parse;
 import de.steinacker.jcg.model.Model;
 import de.steinacker.jcg.model.ModelBuilder;
 import de.steinacker.jcg.model.TypeBuilder;
+import org.apache.log4j.Logger;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -20,9 +21,12 @@ import java.util.Set;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedAnnotationTypes("*")
 final class JcgProcessor extends AbstractProcessor {
+
+    private static final Logger LOG = Logger.getLogger(JcgProcessor.class);
+
     //private NameCheckScanner nameCheckScanner;
     private final ModelBuilder modelBuilder;
-    private ModelBuildingScanner modelBuildingScanner;
+    private TypeBuildingScanner typeBuildingScanner;
 
     public JcgProcessor() {
         this.modelBuilder = new ModelBuilder();
@@ -32,7 +36,7 @@ final class JcgProcessor extends AbstractProcessor {
     public void init(final ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         //this.nameCheckScanner = new NameCheckScanner(messager, typeUtils);
-        modelBuildingScanner = new ModelBuildingScanner(processingEnv);
+        typeBuildingScanner = new TypeBuildingScanner(processingEnv);
     }
 
     /**
@@ -51,8 +55,13 @@ final class JcgProcessor extends AbstractProcessor {
                            final RoundEnvironment roundEnv) {
         if (!roundEnv.processingOver()) {
             for (Element element : roundEnv.getRootElements()) {
-                final TypeBuilder typeBuilder = modelBuildingScanner.scan(element, new TypeBuilder());
-                modelBuilder.addType(typeBuilder.toType());
+                LOG.info("Processing " + element.getSimpleName().toString());
+                try {
+                    final TypeBuilder typeBuilder = typeBuildingScanner.scan(element, new TypeBuilder());
+                    modelBuilder.addType(typeBuilder.toType());
+                } catch (final UnsupportedOperationException e) {
+                    LOG.warn("Ignoring type " + element.getSimpleName().toString() + ": " + e.getMessage());
+                }
             }
         }
         return false;

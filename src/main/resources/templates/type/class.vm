@@ -14,14 +14,25 @@ $type.toString() {
 #foreach( $attribute in $type.fields )
     $attribute.toString();
 #end
-
 #foreach( $method in $type.methods )
+#if( $method.isConstructor() )
+
+    $method.toString() {
+$codeUtil.indent($method.methodBody, 2)
+    }
+#end
+#end
+#foreach( $method in $type.methods )
+#if(!$method.isConstructor())
 #if( $method.abstract)
+
     $method.toString();
 #else
+
     $method.toString() {
-        // TODO: method body
+$codeUtil.indent($method.methodBody, 2)
     }
+#end
 #end
 #end
 }

@@ -14,14 +14,9 @@ import java.lang.annotation.Target;
  * @version %version: 28 %
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
-public @interface ImmutableBean {
-    public enum Style {
-        BUILDER, CONSTRUCTOR
-    }
+@Target({ElementType.TYPE, ElementType.PACKAGE})
+public @interface TransformWith {
 
-    public Style style() default Style.CONSTRUCTOR;
-
-    public String template() default "ImmutableBean";
-
+    public String[] value() default "";
+    
 }

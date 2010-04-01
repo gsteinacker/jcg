@@ -6,6 +6,8 @@ package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.Context;
 import de.steinacker.jcg.model.*;
+import de.steinacker.jcg.util.DefaultFormatStringProvider;
+import de.steinacker.jcg.util.FormatStringProvider;
 import de.steinacker.jcg.util.NameUtil;
 import org.apache.log4j.Logger;
 
@@ -22,6 +24,18 @@ public final class AddSetters extends AbstractFieldToMethodTransformer implement
 
     private final static Logger LOG = Logger.getLogger(AddSetters.class);
 
+    private FormatStringProvider formatStringProvider = new DefaultFormatStringProvider();
+
+    /**
+     * Inject a FormatStringProvider implementation used to generate method bodies for setters,
+     * getters and constructors.
+     *
+     * @param provider the FormatStringProvider
+     */
+    public void setFormatStringProvider(final FormatStringProvider provider) {
+        this.formatStringProvider = provider;
+    }
+
     @Override
     public String getName() {
         return "AddSetters";
@@ -37,7 +51,7 @@ public final class AddSetters extends AbstractFieldToMethodTransformer implement
             mb.addModifier(MethodModifier.FINAL);
         // Der Name der Methode:
         final String fieldName = field.getName().toString();
-        mb.setName(new SimpleName("setParameters" + NameUtil.toCamelHumpName(fieldName, true)));
+        mb.setName(new SimpleName("set" + NameUtil.toCamelHumpName(fieldName, true)));
         // Der Parameter für den setter
         mb.addParameter(new ParameterBuilder()
                 .setComment(field.getTypeName().getSimpleName().toString())
@@ -45,6 +59,11 @@ public final class AddSetters extends AbstractFieldToMethodTransformer implement
                 .setName(field.getName())
                 .setTypeName(field.getTypeName())
                 .toParameter());
+        // Method body:
+        final String formatString = formatStringProvider.getFormatForSetter(field.getTypeName());
+        final String code = String.format(formatString, field.getName(), field.getName());
+        mb.setMethodBody(code);
+
         /*
     // TODO Der Sourcecode:
     mb.setBody(CodeUtil.indent("return " + field.getName() + ";"));

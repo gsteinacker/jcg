@@ -13,7 +13,7 @@ import java.util.*;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public final class QualifiedName implements CharSequence {
+public final class QualifiedName implements CharSequence, Comparable<QualifiedName> {
     private static final Map<CharSequence, QualifiedName> INSTANCES
             = Collections.synchronizedMap(new HashMap<CharSequence, QualifiedName>());
     private static final Collection<String> PRIMITIVE_TYPES = Arrays.asList(
@@ -115,5 +115,10 @@ public final class QualifiedName implements CharSequence {
     @Override
     public int hashCode() {
         return qualifiedName.hashCode();
+    }
+
+    @Override
+    public int compareTo(final QualifiedName o) {
+        return qualifiedName.compareTo(o.qualifiedName);
     }
 }

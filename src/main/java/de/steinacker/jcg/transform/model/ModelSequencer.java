@@ -10,6 +10,7 @@ import de.steinacker.jcg.model.ModelBuilder;
 import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.transform.type.TypeMessage;
 import de.steinacker.jcg.transform.type.TypeTransformer;
+import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,8 @@ import java.util.List;
  */
 public final class ModelSequencer implements ModelTransformer {
 
-    final TypeTransformer typeTransformer;
+    private static final Logger LOG = Logger.getLogger(ModelSequencer.class);
+    private final TypeTransformer typeTransformer;
 
     /**
      * Creates a ModelSequencer.
@@ -44,6 +46,7 @@ public final class ModelSequencer implements ModelTransformer {
     public ModelMessage transform(ModelMessage message) {
         final List<TypeMessage> transformedMessages = new ArrayList<TypeMessage>();
         for (final TypeMessage typeMessage : split(message)) {
+            LOG.info("Transforming " + typeMessage.getPayload().getName());
             transformedMessages.add(typeTransformer.transform(typeMessage));
         }
         return aggregate(transformedMessages);

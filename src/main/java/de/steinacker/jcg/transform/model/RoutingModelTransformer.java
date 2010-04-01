@@ -4,8 +4,7 @@
 
 package de.steinacker.jcg.transform.model;
 
-import de.steinacker.jcg.exception.NoTransformerException;
-import de.steinacker.jcg.transform.predicate.Rule;
+import de.steinacker.jcg.transform.rule.Rule;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -57,15 +56,17 @@ public final class RoutingModelTransformer implements ModelTransformer {
      */
     @Override
     public ModelMessage transform(final ModelMessage message) {
-        final String key = this.selector.apply(message);
-        if (transformers.containsKey(key)) {
-            final ModelTransformer modelTransformer = transformers.get(key);
-            LOG.info("Selecting " + modelTransformer);
-            return modelTransformer.transform(message);
+        ModelMessage tempMessage = message;
+        final List<String> keys = this.selector.apply(message);
+        if (keys.isEmpty()) {
+            LOG.warn("No transformers returned from selector " + selector);
         }
-        final String msg = "No ModelTransformer found for selector=" + key;
-        LOG.error(msg);
-        throw new NoTransformerException(msg);
+        for (final String key : keys) {
+            final ModelTransformer transformer = transformers.get(key);
+            LOG.info("Selecting " + transformer);
+            tempMessage = transformer.transform(tempMessage);
+        }
+        return tempMessage;
     }
 
     @Override

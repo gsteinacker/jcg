@@ -13,66 +13,98 @@
 
     <bean id="glossary" factory-bean="glossaryFactory" factory-method="glossary"/>
 
-    <bean id="parser" class="de.steinacker.jcg.parse.JavaFileParser">
+    <bean id="parser" class="de.steinacker.jcg.parse.JavaFileParser" />
+
+    <bean id="transformerProvider" class="de.steinacker.jcg.transform.type.TypeTransformerProvider">
+      <property name="transformers">
+        <list>
+          <bean class="de.steinacker.jcg.transform.translation.TypeTranslator">
+              <constructor-arg ref="glossary"/>
+          </bean>
+          <bean class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
+          <bean class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
+          <bean class="de.steinacker.jcg.transform.type.AddConstructors"/>
+          <bean class="de.steinacker.jcg.transform.type.AddGetters"/>
+          <bean class="de.steinacker.jcg.transform.type.AddGeneratedAnnotation"/>
+          <bean class="de.steinacker.jcg.transform.type.RemoveJcgAnnotations"/>
+          <bean class="de.steinacker.jcg.transform.type.AddSetters"/>
+          <bean class="de.steinacker.jcg.transform.type.FinalizeFields"/>
+          <bean class="de.steinacker.jcg.transform.type.TypeTransformerChain">
+            <property name="name" value="Mutable" />
+            <property name="transformers">
+              <list>
+                  <value>TypeTranslator</value>
+                  <value>PublicFinalClass</value>
+                  <value>PrivatizeFields</value>
+                  <value>AddConstructors</value>
+                  <value>AddGetters</value>
+                  <value>AddGeneratedAnnotation</value>
+                  <!--<value>removeJcgAnnotations</value>-->
+                  <value>AddSetters</value>
+              </list>
+            </property>
+          </bean>
+          <bean class="de.steinacker.jcg.transform.type.TypeTransformerChain">
+            <property name="name" value="Immutable" />
+            <property name="transformers">
+              <list>
+                  <value>TypeTranslator</value>
+                  <value>PublicFinalClass</value>
+                  <value>PrivatizeFields</value>
+                  <value>AddConstructors</value>
+                  <value>AddGetters</value>
+                  <value>AddGeneratedAnnotation</value>
+                  <!--<value>removeJcgAnnotations</value>-->
+                  <value>FinalizeFields</value>
+              </list>
+            </property>
+          </bean>
+        </list>
+      </property>
     </bean>
 
-
-    <bean id="typeRouter" class="de.steinacker.jcg.transform.type.TypeTransformerRouter">
-        <constructor-arg index="0">
-            <bean class="de.steinacker.jcg.transform.predicate.ContextParamRule">
-                <constructor-arg type="java.lang.String" value="ctx-selector-param"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <map>
-                <entry key="mutable-model" value-ref="mutableTypeTransformer"/>
-                <entry key="immutable-model" value-ref="immutableTypeTransformer"/>
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="mutableTypeTransformer" class="de.steinacker.jcg.transform.type.TypeTransformerChain">
-        <constructor-arg>
+    <bean id="transformations" class="de.steinacker.jcg.transform.type.TypeTransformerRouter">
+      <property name="selector">
+        <bean class="de.steinacker.jcg.transform.rule.Rules">
+          <property name="rules">
             <list>
-                <bean class="de.steinacker.jcg.transform.translation.TypeTranslator">
-                    <constructor-arg ref="glossary"/>
-                </bean>
-                <bean class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
-                <bean class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
-                <bean class="de.steinacker.jcg.transform.type.AddConstructors"/>
-                <bean class="de.steinacker.jcg.transform.type.AddGetters"/>
-                <bean class="de.steinacker.jcg.transform.type.AddGeneratedAnnotation"/>
-                <bean class="de.steinacker.jcg.transform.type.AddSetters"/>
+              <bean class="de.steinacker.jcg.transform.rule.AnnotationRule">
+                <property name="annotationNames">
+                  <list>
+                    <value>de.steinacker.jcg.annotation.Mutable</value>
+                    <value>de.steinacker.jcg.annotation.Immutable</value>
+                    <value>de.steinacker.jcg.annotation.TransformWith</value>
+                  </list>
+                </property>
+              </bean>
+              <bean class="de.steinacker.jcg.transform.rule.ContextParamRule">
+                <property name="ctxParam" value="ctx-selector-param"/>
+              </bean>
             </list>
-        </constructor-arg>
-    </bean>
-
-    <bean id="immutableTypeTransformer" class="de.steinacker.jcg.transform.type.TypeTransformerChain">
-        <constructor-arg>
-            <list>
-                <bean class="de.steinacker.jcg.transform.translation.TypeTranslator">
-                    <constructor-arg ref="glossary"/>
-                </bean>
-                <bean class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
-                <bean class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
-                <bean class="de.steinacker.jcg.transform.type.AddConstructors"/>
-                <bean class="de.steinacker.jcg.transform.type.AddGetters"/>
-                <bean class="de.steinacker.jcg.transform.type.AddGeneratedAnnotation"/>
-                <bean class="de.steinacker.jcg.transform.type.FinalizeFields"/>
-            </list>
-        </constructor-arg>
+          </property>
+        </bean>
+      </property>
+      <property name="name" value="TypeTransformerRouter"/>
+      <property name="transformerProvider" ref="transformerProvider"/>
     </bean>
 
     <bean id="generator" class="de.steinacker.jcg.generator.GeneratorChain">
         <constructor-arg>
             <list>
-                <bean id="consoleGenerator" class="de.steinacker.jcg.generator.ConsoleGenerator">
+                <bean class="de.steinacker.jcg.generator.ConsoleGenerator">
                     <property name="serializer">
                         <bean class="de.steinacker.jcg.generator.VelocityTypeSerializer">
                             <constructor-arg value="/templates/type/class.vm"/>
                         </bean>
                     </property>
                 </bean>
+              <bean class="de.steinacker.jcg.generator.FileGenerator">
+                  <property name="serializer">
+                      <bean class="de.steinacker.jcg.generator.VelocityTypeSerializer">
+                          <constructor-arg value="/templates/type/class.vm"/>
+                      </bean>
+                  </property>
+              </bean>
             </list>
         </constructor-arg>
     </bean>
@@ -81,7 +113,7 @@
         <property name="parser" ref="parser"/>
         <property name="modelTransformer">
             <bean class="de.steinacker.jcg.transform.model.ModelSequencer">
-                <constructor-arg ref="typeRouter"/>
+                <constructor-arg ref="transformations"/>
             </bean>
         </property>
         <property name="generator" ref="generator"/>

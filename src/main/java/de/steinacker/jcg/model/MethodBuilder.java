@@ -11,32 +11,43 @@ import java.util.Set;
 
 public final class MethodBuilder {
     private SimpleName name;
+    private String comment;
     private List<Annotation> annotations;
     private Set<MethodModifier> modifiers;
     private List<QualifiedName> exceptions;
     private QualifiedName returnTypeName;
     private List<Parameter> parameters;
+    private String methodBody;
 
     public MethodBuilder() {
         name = null;
+        comment = "";
         annotations = new ArrayList<Annotation>();
         modifiers = EnumSet.noneOf(MethodModifier.class);
         exceptions = new ArrayList<QualifiedName>();
         returnTypeName = QualifiedName.valueOf("void");
         parameters = new ArrayList<Parameter>();
+        methodBody = "";
     }
 
     public MethodBuilder(final Method prototype) {
         this.name = prototype.getName();
+        this.comment = prototype.getComment();
         this.annotations = new ArrayList<Annotation>(prototype.getAnnotations());
         this.modifiers = EnumSet.copyOf(prototype.getModifiers());
         this.exceptions = new ArrayList<QualifiedName>(prototype.getExceptions());
         this.returnTypeName = prototype.getReturnTypeName();
         this.parameters = new ArrayList<Parameter>(prototype.getParameters());
+        this.methodBody = prototype.getMethodBody();
     }
 
     public MethodBuilder setName(final SimpleName name) {
         this.name = name;
+        return this;
+    }
+
+    public MethodBuilder setComment(final String comment) {
+        this.comment = comment;
         return this;
     }
 
@@ -85,7 +96,12 @@ public final class MethodBuilder {
         return this;
     }
 
+    public MethodBuilder setMethodBody(final String methodBody) {
+        this.methodBody = methodBody;
+        return this;
+    }
+
     public Method toMethod() {
-        return new Method(name, annotations, modifiers, exceptions, returnTypeName, parameters);
+        return new Method(name, annotations, modifiers, exceptions, returnTypeName, parameters, comment, methodBody);
     }
 }

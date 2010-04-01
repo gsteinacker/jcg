@@ -8,8 +8,31 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
     <appender name="file" class="org.apache.log4j.FileAppender">
-        <param name="datePattern" value="'.'yyyy-MM-dd_HH-mm"/>
         <param name="file" value="jcg.log"/>
+        <param name="Append" value="true"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c: %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="parse" class="org.apache.log4j.FileAppender">
+        <param name="file" value="jcg-parse.log"/>
+        <param name="Append" value="true"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c: %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="transform" class="org.apache.log4j.FileAppender">
+        <param name="file" value="jcg-transform.log"/>
+        <param name="Append" value="true"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c: %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="generator" class="org.apache.log4j.FileAppender">
+        <param name="file" value="jcg-generate.log"/>
         <param name="Append" value="true"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c: %m%n"/>
@@ -25,12 +48,33 @@
     <logger name="org" additivity="false">
         <level value="INFO"/>
         <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+    </logger>
+
+    <logger name="de.steinacker.jcg.parse" additivity="false">
+        <level value="TRACE"/>
+        <appender-ref ref="console"/>
+        <appender-ref ref="parse"/>
+    </logger>
+
+    <logger name="de.steinacker.jcg.transform" additivity="false">
+        <level value="TRACE"/>
+        <appender-ref ref="console"/>
+        <appender-ref ref="transform"/>
+    </logger>
+
+    <logger name="de.steinacker.jcg.generator" additivity="false">
+        <level value="TRACE"/>
+        <appender-ref ref="console"/>
+        <appender-ref ref="generator"/>
     </logger>
 
     <logger name="de.steinacker" additivity="false">
         <level value="TRACE"/>
         <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
     </logger>
+
 
     <root>
         <priority value="INFO"/>

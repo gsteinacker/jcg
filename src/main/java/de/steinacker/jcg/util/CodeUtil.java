@@ -12,17 +12,18 @@ import java.util.List;
  * @version %version: 28 %
  */
 public final class CodeUtil {
-    private static int commentLineWidth = 80; // TODO: Konfigurieren!
-    private static String fileComment =       // TODO: Konfigurieren!
+    private static final int TAB_WIDTH = 4;     // TODO: Konfigurieren!
+    private static int COMMENT_LINE_WIDTH = 80; // TODO: Konfigurieren!
+    private static String FILE_COMMENT =        // TODO: Konfigurieren!
             "Copyright (c) 2010 by Guido Steinacker\n" +
                     "This file is generated using JCG.";
 
 
-    public static String fileComment() {
-        return toBlockComment(fileComment, commentLineWidth);
+    public static CharSequence fileComment() {
+        return toBlockComment(FILE_COMMENT, COMMENT_LINE_WIDTH);
     }
 
-    public static String toJavaDocComment(final String text, final int lineWidth) {
+    public static CharSequence toJavaDocComment(final String text, final int lineWidth) {
         final List<String> lines = splitCommentIntoLines(text, lineWidth);
         final StringBuilder comment = new StringBuilder();
         comment.append("/**");
@@ -33,7 +34,7 @@ public final class CodeUtil {
         return comment.toString();
     }
 
-    public static String toBlockComment(final String text, final int lineWidth) {
+    public static CharSequence toBlockComment(final String text, final int lineWidth) {
         final List<String> lines = splitCommentIntoLines(text, lineWidth);
         final StringBuilder comment = new StringBuilder();
         comment.append("/*");
@@ -42,6 +43,23 @@ public final class CodeUtil {
         }
         comment.append("\n */");
         return comment.toString();
+    }
+
+    public static CharSequence indent(final String text, final int steps) {
+        final String s = text.replaceAll("\r", "");
+        final String[] lines = s.split("\n");
+        final StringBuilder sb = new StringBuilder();
+        boolean firstLine = true;
+        for (final String line : lines) {
+            if (!firstLine)
+                sb.append("\n");
+            else
+                firstLine = false;
+            for (int i=0, len=steps * TAB_WIDTH; i<len; ++i)
+                sb.append(' ');
+            sb.append(line);
+        }
+        return sb;
     }
 
     /**

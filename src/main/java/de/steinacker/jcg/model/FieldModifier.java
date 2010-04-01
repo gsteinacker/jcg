@@ -9,11 +9,11 @@ package de.steinacker.jcg.model;
  * @version %version: 28 %
  */
 public enum FieldModifier {
-    PUBLIC,
-    PROTECTED,
-    PRIVATE,
-    FINAL,
     STATIC,
+    FINAL,
+    PRIVATE,
+    PROTECTED,
+    PUBLIC,
     TRANSIENT,
     VOLATILE
 }

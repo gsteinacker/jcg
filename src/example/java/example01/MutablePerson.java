@@ -5,33 +5,28 @@
 package example01;
 
 import de.steinacker.jcg.annotation.Method;
-import de.steinacker.jcg.annotation.MutableBean;
+import de.steinacker.jcg.annotation.Mutable;
 import de.steinacker.jcg.annotation.Property;
+
+import javax.validation.constraints.Pattern;
 
 /**
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-@MutableBean
+@Mutable
 public class MutablePerson {
 
-    public static final int INT_42 = 42;
-    public static final int INT_4711;
-
-    static {
-        INT_4711 = 4711;
-    }
-
-    @Property
+    //@Property
     public String firstName;
 
-    @Property
+    //@Property    
     public String lastName;
 
     // TODO: Warnung oder Fehler ausgeben? Kopieren? 
     private String ignoredAttribute;
 
-    @Method
+    //@Method
     public String getName() {
         return new StringBuilder(firstName)
                 .append(" ")

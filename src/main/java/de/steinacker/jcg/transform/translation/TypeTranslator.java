@@ -5,7 +5,6 @@
 package de.steinacker.jcg.transform.translation;
 
 import de.steinacker.jcg.model.*;
-import de.steinacker.jcg.transform.type.SimpleTypeTransformer;
 import de.steinacker.jcg.transform.type.TypeMessage;
 import de.steinacker.jcg.transform.type.TypeTransformer;
 import de.steinacker.jcg.util.NameUtil;
@@ -20,7 +19,7 @@ import java.util.List;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public final class TypeTranslator extends SimpleTypeTransformer implements TypeTransformer {
+public final class TypeTranslator implements TypeTransformer {
 
     private static final Logger LOG = Logger.getLogger(TypeTranslator.class);
 
@@ -32,11 +31,11 @@ public final class TypeTranslator extends SimpleTypeTransformer implements TypeT
 
     @Override
     public String getName() {
-        return "Translator";
+        return "TypeTranslator";
     }
 
     @Override
-    protected TypeMessage doTransform(TypeMessage message) {
+    public TypeMessage transform(TypeMessage message) {
         final Type type = message.getPayload();
         final TypeBuilder typeBuilder = new TypeBuilder(type);
         // Translate the name:

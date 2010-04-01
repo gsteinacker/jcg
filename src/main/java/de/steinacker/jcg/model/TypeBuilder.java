@@ -15,6 +15,7 @@ import java.util.Set;
  */
 public final class TypeBuilder {
     private QualifiedName name;
+    private Type.Kind kind = Type.Kind.CLASS;
     private List<Annotation> annotations = new ArrayList<Annotation>();
     private EnumSet<TypeModifier> modifiers = EnumSet.noneOf(TypeModifier.class);
     private String comment = "";
@@ -22,8 +23,6 @@ public final class TypeBuilder {
     private List<QualifiedName> nameOfInterfaces = new ArrayList<QualifiedName>();
     private List<Method> methods = new ArrayList<Method>();
     private List<Field> fields = new ArrayList<Field>();
-    private boolean isArray = false;
-    private boolean isInterface = false;
 
     public TypeBuilder() {
     }
@@ -37,8 +36,7 @@ public final class TypeBuilder {
         nameOfInterfaces.addAll(prototype.getNameOfInterfaces());
         methods.addAll(prototype.getMethods());
         fields.addAll(prototype.getFields());
-        isArray = prototype.isArray();
-        isInterface = prototype.isInterface();
+        kind = prototype.getKind();
     }
 
     public TypeBuilder setName(final QualifiedName name) {
@@ -46,6 +44,11 @@ public final class TypeBuilder {
         return this;
     }
 
+    public TypeBuilder setKind(final Type.Kind kind) {
+        this.kind = kind;
+        return this;
+    }
+    
     public TypeBuilder setAnnotations(final List<Annotation> annotations) {
         this.annotations = new ArrayList<Annotation>(annotations);
         return this;
@@ -106,19 +109,9 @@ public final class TypeBuilder {
         return this;
     }
 
-    public TypeBuilder setIsArray(final boolean isArray) {
-        this.isArray = isArray;
-        return this;
-    }
-
-    public TypeBuilder setIsInterface(final boolean isInterface) {
-        this.isInterface = isInterface;
-        return this;
-    }
-
     public Type toType() {
-        return new Type(name, annotations, modifiers, comment,
+        return new Type(name, kind, annotations, modifiers, comment,
                 nameOfSuperClass, nameOfInterfaces, methods,
-                fields, isArray, isInterface);
+                fields);
     }
 }

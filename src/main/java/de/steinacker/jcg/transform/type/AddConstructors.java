@@ -7,8 +7,8 @@ package de.steinacker.jcg.transform.type;
 import de.steinacker.jcg.Context;
 import de.steinacker.jcg.ContextBuilder;
 import de.steinacker.jcg.model.*;
-import de.steinacker.jcg.transform.predicate.Predicate;
-import de.steinacker.jcg.transform.predicate.TruePredicate;
+import de.steinacker.jcg.util.DefaultFormatStringProvider;
+import de.steinacker.jcg.util.FormatStringProvider;
 import org.apache.log4j.Logger;
 
 /**
@@ -20,11 +20,18 @@ import org.apache.log4j.Logger;
 public final class AddConstructors extends AbstractTypeTransformer implements TypeTransformer {
 
     public final static String CTX_PARAM_METHODBUILDER = "methodBuilder";
+    public final static String CTX_PARAM_METHODBODYBUILDER = "methodBodyBuilder";
     private final static Logger LOG = Logger.getLogger(AddConstructors.class);
-    private Predicate<Field> fieldPredicate = new TruePredicate<Field>();
+    private FormatStringProvider formatStringProvider = new DefaultFormatStringProvider();
 
-    public final void setFieldPredicate(final Predicate<Field> fieldPredicate) {
-        this.fieldPredicate = fieldPredicate;
+    /**
+     * Inject a FormatStringProvider implementation used to generate method bodies for setters,
+     * getters and constructors.
+     *
+     * @param provider the FormatStringProvider
+     */
+    public void setFormatStringProvider(final FormatStringProvider provider) {
+        this.formatStringProvider = provider;
     }
 
     @Override
@@ -35,7 +42,8 @@ public final class AddConstructors extends AbstractTypeTransformer implements Ty
     @Override
     protected ContextBuilder createTransformerContext(TypeMessage message) {
         return super.createTransformerContext(message)
-                .addParameter(CTX_PARAM_METHODBUILDER, new MethodBuilder());
+                .addParameter(CTX_PARAM_METHODBUILDER, new MethodBuilder())
+                .addParameter(CTX_PARAM_METHODBODYBUILDER, new StringBuilder());
     }
 
     @Override
@@ -49,33 +57,40 @@ public final class AddConstructors extends AbstractTypeTransformer implements Ty
             methodBuilder.addModifier(MethodModifier.FINAL);
         }
         super.visit(type, context);
-        getTypeBuilder(context).addMethod(methodBuilder.toMethod());
+        final String code = getMethodBodyBuilder(context).toString().trim();
+        getTypeBuilder(context).addMethod(methodBuilder.setMethodBody(code).toMethod());
     }
 
     @Override
     public void visit(final Field field, final Context context) {
-        if (fieldPredicate == null || fieldPredicate.eval(field)) {
+        if (!field.is(FieldModifier.STATIC)) {
             final Parameter p = new ParameterBuilder()
                     .setFinal(true)
                     .setName(field.getName())
                     .setTypeName(field.getTypeName())
                     .toParameter();
             getMethodBuilder(context).addParameter(p);
+            // Method body:
+            final String formatString = formatStringProvider.getFormatForSetter(field.getTypeName());
+            final String code = String.format(formatString, field.getName(), field.getName());
+            getMethodBodyBuilder(context).append(code).append("\n");
+
             /*
-            // TODO Der Sourcecode:
-            mb.setBody(CodeUtil.indent("return " + field.getName() + ";"));
             // TODO Kommentar nicht vergessen:
             final StringBuilder sb = new StringBuilder();
             sb.append(field.getComment());
             sb.append("\n").append("@return ").append(field.getName());
             mb.setComment(CodeUtil.toJavaDocComment(sb.toString()));
             */
-
         }
     }
 
     protected final MethodBuilder getMethodBuilder(final Context context) {
         return context.getParameter(CTX_PARAM_METHODBUILDER, MethodBuilder.class);
+    }
+
+    protected final StringBuilder getMethodBodyBuilder(final Context context) {
+        return context.getParameter(CTX_PARAM_METHODBODYBUILDER, StringBuilder.class);
     }
 
     @Override

@@ -43,4 +43,22 @@
         <shortDescription>Eine Währung.</shortDescription>
         <longDescription>Währung eines Preises.</longDescription>
     </entry>
+    <entry>
+        <term>Preis</term>
+        <pluralTerm>Preise</pluralTerm>
+        <translation>price</translation>
+        <pluralTranslation>prices</pluralTranslation>
+        <shortDescription>Eine Preisinformation.</shortDescription>
+        <longDescription>Laaaaaange Beschreibung, was ein Preis ist.</longDescription>
+    </entry>
+    <!-- copy+paste this to create a new glossary entry:
+    <entry>
+        <term></term>
+        <pluralTerm></pluralTerm>
+        <translation></translation>
+        <pluralTranslation></pluralTranslation>
+        <shortDescription></shortDescription>
+        <longDescription></longDescription>
+    </entry>
+    -->
 </glossary>

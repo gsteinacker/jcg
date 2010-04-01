@@ -24,19 +24,19 @@ public final class Annotation {
     @Valid
     private final QualifiedName name;
     @NotNull
-    private final Map<String, String> parameters = new LinkedHashMap<String, String>();
+    private final Map<String, Object> parameters = new LinkedHashMap<String, Object>();
     // TODO Annotations sind etwas komplizierter; es werden nich nur String Werte zugelassen.
 
     public Annotation(final QualifiedName name) {
         this.name = name;
     }
 
-    public Annotation(final QualifiedName name, final String value) {
+    public Annotation(final QualifiedName name, final Object value) {
         this.name = name;
         this.parameters.put(VALUE_PARAM, value);
     }
 
-    public Annotation(final QualifiedName name, final Map<String, String> parameters) {
+    public Annotation(final QualifiedName name, final Map<String, ?> parameters) {
         this.name = name;
         this.parameters.putAll(parameters);
     }
@@ -45,15 +45,15 @@ public final class Annotation {
         return name;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return parameters.containsKey(VALUE_PARAM) ? parameters.get(VALUE_PARAM) : "";
     }
 
-    public Map<String, String> getParameters() {
+    public Map<String, Object> getParameters() {
         return Collections.unmodifiableMap(parameters);
     }
 
-    public String getParameter(final String name) {
+    public Object getParameter(final String name) {
         return parameters.get(name);
     }
 
@@ -78,15 +78,14 @@ public final class Annotation {
     }
 
     @Override
-    @Generated(value = "lsls", comments = "")
     public String toString() {
         final StringBuilder sb = new StringBuilder("@").append(name.getSimpleName());
         if (parameters.size() == 1 && parameters.containsKey(VALUE_PARAM))
-            sb.append('(').append(parameters.get(VALUE_PARAM)).append(')');
+            sb.append("(\"").append(parameters.get(VALUE_PARAM)).append("\")");
         if (parameters.size() > 1) {
             sb.append('(');
             boolean first = true;
-            for (final Map.Entry<String, String> entry : parameters.entrySet()) {
+            for (final Map.Entry<String, Object> entry : parameters.entrySet()) {
                 if (!first) {
                     sb.append(", ");
                 }

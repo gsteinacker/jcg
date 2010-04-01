@@ -6,6 +6,8 @@ package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.Context;
 import de.steinacker.jcg.model.*;
+import de.steinacker.jcg.util.DefaultFormatStringProvider;
+import de.steinacker.jcg.util.FormatStringProvider;
 import de.steinacker.jcg.util.NameUtil;
 import org.apache.log4j.Logger;
 
@@ -21,6 +23,18 @@ import org.apache.log4j.Logger;
 public final class AddGetters extends AbstractFieldToMethodTransformer implements TypeTransformer {
 
     private final static Logger LOG = Logger.getLogger(AddGetters.class);
+
+    private FormatStringProvider formatStringProvider = new DefaultFormatStringProvider();
+
+    /**
+     * Inject a FormatStringProvider implementation used to generate method bodies for setters,
+     * getters and constructors.
+     *
+     * @param provider the FormatStringProvider
+     */
+    public void setFormatStringProvider(final FormatStringProvider provider) {
+        this.formatStringProvider = provider;
+    }
 
     @Override
     public String getName() {
@@ -40,6 +54,9 @@ public final class AddGetters extends AbstractFieldToMethodTransformer implement
         mb.setName(new SimpleName("get" + NameUtil.toCamelHumpName(fieldName, true)));
         // Der Return-Type der Methode:
         mb.setReturnTypeName(field.getTypeName());
+        final String formatString = formatStringProvider.getFormatForGetter(field.getTypeName());
+        final String code = String.format(formatString, field.getName());
+        mb.setMethodBody(code);
         /*
         // TODO Der Sourcecode:
         mb.setBody(CodeUtil.indent("return " + field.getName() + ";"));

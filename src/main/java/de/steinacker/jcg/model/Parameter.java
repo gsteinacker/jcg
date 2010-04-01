@@ -6,6 +6,7 @@ package de.steinacker.jcg.model;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +26,7 @@ public final class Parameter implements Annotatable {
     @Valid
     private final List<Annotation> annotations;
     private final boolean isFinal;
-    @NotNull
+    @Null
     private final String comment;
 
 

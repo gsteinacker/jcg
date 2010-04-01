@@ -9,12 +9,15 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Attribute;
 import de.steinacker.jcg.model.*;
+import org.apache.log4j.Logger;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.ElementScanner6;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -22,7 +25,9 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static javax.lang.model.element.ElementKind.*;
@@ -51,17 +56,20 @@ import static javax.tools.Diagnostic.Kind.WARNING;
  * SimpleElementVisitor can be extended instead of an
  * ElementScanner.
  */
-final class ModelBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder> {
+final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder> {
+
+    private static final Logger LOG = Logger.getLogger(TypeBuildingScanner.class);
 
     private final Types typeUtils;
     private final Messager messager;
     private final Trees trees;
+    private final Elements elementUtils;
 
-    public ModelBuildingScanner(final ProcessingEnvironment processingEnv) {
+    public TypeBuildingScanner(final ProcessingEnvironment processingEnv) {
         this.trees = Trees.instance(processingEnv);
         this.messager = processingEnv.getMessager();
         this.typeUtils = processingEnv.getTypeUtils();
-
+        this.elementUtils = processingEnv.getElementUtils();
     }
 
     /**
@@ -101,7 +109,20 @@ final class ModelBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilde
         typeBuilder.setName(QualifiedName.valueOf(e.getQualifiedName()));
 
         // class or interface?
-        typeBuilder.setIsInterface(e.getKind().isInterface());
+        switch (e.getKind()) {
+            case ANNOTATION_TYPE:
+                throw new UnsupportedOperationException("Annotations are not yet implemented.");
+            case CLASS:
+                typeBuilder.setKind(Type.Kind.CLASS);
+                break;
+            case ENUM:
+                throw new UnsupportedOperationException("Enumerations are not yet implemented.");
+                /*typeBuilder.setKind(Type.Kind.ENUM);
+                break;*/
+            case INTERFACE:
+                typeBuilder.setKind(Type.Kind.INTERFACE);
+                break;
+        }
 
         // modifiers:
         typeBuilder.setModifiers(mapToTypeModifiers(e.getModifiers()));
@@ -110,9 +131,10 @@ final class ModelBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilde
         List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
         typeBuilder.setAnnotations(annotations);
 
-        // comment:
-        final String comment = "This is my comment.";
-        typeBuilder.setComment(comment);
+        // TODO comment:
+        //final String comment = "This is my comment.";
+        typeBuilder.setComment("");
+
         // parent class:
         typeBuilder.setNameOfSuperClass(QualifiedName.valueOf(e.getSuperclass().toString()));
 
@@ -154,13 +176,13 @@ final class ModelBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilde
             final List<Parameter> parameters = new ArrayList<Parameter>(e.getParameters().size());
             for (VariableElement variableElement : e.getParameters()) {
                 // TODO: variableElement.getConstantValue();
-                final String comment = "TODO!";
+                //final String comment = "TODO!";
                 final Parameter param = new ParameterBuilder()
                         .setTypeName(QualifiedName.valueOf(variableElement.asType().toString()))
                         .setName(new SimpleName(variableElement.getSimpleName()))
                         .setAnnotations(mapToAnnotations(variableElement.getAnnotationMirrors()))
                         .setFinal(variableElement.getModifiers().contains(Modifier.FINAL))
-                        .setComment(comment)
+                        .setComment("")
                         .toParameter();
                 parameters.add(param);
             }
@@ -173,10 +195,16 @@ final class ModelBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilde
                     .setExceptions(exceptions)
                     .setReturnTypeName(returnType)
                     .setParameters(parameters)
+                    .setMethodBody("throw new UnsupportedOperationException(\"Parsing of method bodies is not yet supported by jcg.\");")
                     .toMethod();
             typeBuilder.addMethod(method);
         } else if (e.getKind() == CONSTRUCTOR) {
             // TODO: Konstruktoren
+            System.out.println("CONSTRUCTOR " + e.getSimpleName().toString());
+        } else if (e.getKind() == STATIC_INIT) {
+            System.out.println("STATIC_INIT " + e.getSimpleName().toString());
+        } else if (e.getKind() == INSTANCE_INIT) {
+            System.out.println("INSTANCE_INIT " + e.getSimpleName().toString());
         }
 
         // At this point, could use the Tree API,
@@ -200,16 +228,18 @@ final class ModelBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilde
                     heuristicallyConstant(e)) {
                 checkAllCaps(e); // includes enum constants                
             } else if (e.getKind() == FIELD) {
-                final SimpleName name = new SimpleName(e.getSimpleName().toString());
-                final QualifiedName typeName = QualifiedName.valueOf(e.asType().toString());
-                final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
-                final EnumSet<FieldModifier> modifiers = mapToFieldModifiers(e);
-                final String comment = "TODO!";
-                typeBuilder.addField(new FieldBuilder().setName(name).setTypeName(typeName).setAnnotations(annotations).setModifiers(modifiers).setComment(comment).toField());
+                // Hu?
             }
+            final SimpleName name = new SimpleName(e.getSimpleName().toString());
+            final QualifiedName typeName = QualifiedName.valueOf(e.asType().toString());
+            final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
+            final EnumSet<FieldModifier> modifiers = mapToFieldModifiers(e);
+            final String comment = "TODO!";
+            final Object constantValue = e.getConstantValue();
+            typeBuilder.addField(new FieldBuilder().setName(name).setTypeName(typeName).setAnnotations(annotations).setModifiers(modifiers).setComment(comment).toField());
         }
         // A call to super can be elided with the current language definition.
-        // super.visitVariable(e, p);
+        // super.visitVariable(e, typeBuilder);
         return typeBuilder;
     }
 
@@ -245,7 +275,8 @@ final class ModelBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilde
         // further checks, types in a package could be visited
         // more than once if a package's elements were visited
         // too.
-        return typeBuilder;
+        throw new UnsupportedOperationException("package-info.java is not yet supported.");
+        //return typeBuilder; //TODO: annotierte packages / package-info.java
     }
 
 
@@ -387,15 +418,33 @@ final class ModelBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilde
         messager.printMessage(Diagnostic.Kind.ERROR, message, positionHint);
     }
 
-    private static List<Annotation> mapToAnnotations(List<? extends AnnotationMirror> annotationMirrors) {
+    private List<Annotation> mapToAnnotations(List<? extends AnnotationMirror> annotationMirrors) {
         List<Annotation> annotations = new ArrayList<Annotation>(annotationMirrors.size());
         for (final AnnotationMirror annotationMirror : annotationMirrors) {
-            annotations.add(new Annotation(QualifiedName.valueOf(annotationMirror.getAnnotationType().toString())));
-            // TODO: annotation values
-            for (final ExecutableElement ee : annotationMirror.getElementValues().keySet()) {
-                //System.out.println("    simpleName: " + ee.getSimpleName());
-                //System.out.println("    value: " + annotationMirror.getElementValues().get(ee).getValue());
+            final Map<String,Object> parameters = new LinkedHashMap<String, Object>();
+            final Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = elementUtils.getElementValuesWithDefaults(annotationMirror);
+            for (final ExecutableElement ee : elementValues.keySet()) {                
+                System.out.println("    simpleName: " + ee.getSimpleName());
+                final AnnotationValue annotationValue = elementUtils.getElementValuesWithDefaults(annotationMirror).get(ee);
+                System.out.println("    value: " + annotationValue.getValue());
+                final Object value = elementValues.get(ee).getValue();
+                if (com.sun.tools.javac.util.List.class.isAssignableFrom(value.getClass())) {
+                    com.sun.tools.javac.util.List l = com.sun.tools.javac.util.List.class.cast(value);
+                    for (Object o : l) {
+                        System.out.println(((Attribute.Constant)o).toString());
+                        System.out.println(((Attribute.Constant)o).getValue());
+                        parameters.put(ee.getSimpleName().toString(), ((Attribute.Constant)o).getValue());
+                    }
+                } else if (!value.getClass().equals(String.class)) {
+                    LOG.warn("Annotation value " + ee.getSimpleName() + " is not a String but a " + value.getClass() + ". Currently, only String-values are supported.");
+                } else {
+                    // TODO: andere Typen als String für Annotations zulassen!!!
+                    parameters.put(ee.getSimpleName().toString(), value);
+                    //System.out.println("    simpleName: " + ee.getSimpleName());
+                    //System.out.println("    value: " + annotationMirror.getElementValues().get(ee).getValue());
+                }
             }
+            annotations.add(new Annotation(QualifiedName.valueOf(annotationMirror.getAnnotationType().toString()), parameters));
         }
         return annotations;
     }

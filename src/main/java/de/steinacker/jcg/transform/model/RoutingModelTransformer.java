@@ -4,7 +4,7 @@
 
 package de.steinacker.jcg.transform.model;
 
-import de.steinacker.jcg.transform.rule.Rule;
+import de.steinacker.jcg.transform.rule.ModelTransformerSelector;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -18,7 +18,7 @@ import java.util.Map;
 public final class RoutingModelTransformer implements ModelTransformer {
     private final static Logger LOG = Logger.getLogger(RoutingModelTransformer.class);
 
-    private final Rule<ModelMessage, String> selector;
+    private final ModelTransformerSelector selector;
     private final Map<String, ModelTransformer> transformers;
     private final String name;
 
@@ -27,7 +27,7 @@ public final class RoutingModelTransformer implements ModelTransformer {
      * @param transformers the possible transformers.
      */
     public RoutingModelTransformer(final String name,
-                                   final Rule<ModelMessage, String> selector,
+                                   final ModelTransformerSelector selector,
                                    final List<? extends ModelTransformer> transformers) {
         this.selector = selector;
         this.name = name;

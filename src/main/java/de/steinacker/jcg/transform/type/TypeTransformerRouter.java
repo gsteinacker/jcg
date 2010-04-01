@@ -5,6 +5,7 @@
 package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.transform.rule.Rule;
+import de.steinacker.jcg.transform.rule.TypeTransformerSelector;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -21,14 +22,14 @@ public final class TypeTransformerRouter implements TypeTransformer {
     private final static Logger LOG = Logger.getLogger(TypeTransformerRouter.class);
 
     private String name;
-    private Rule<TypeMessage, String> selector;
+    private TypeTransformerSelector selector;
     private TypeTransformerProvider provider;
 
     /**
      * @param selector the Rule used to select a transformer from the provider.
      */
     @Required
-    public void setSelector(final Rule<TypeMessage, String> selector) {
+    public void setSelector(final TypeTransformerSelector selector) {
         this.selector = selector;
     }
 

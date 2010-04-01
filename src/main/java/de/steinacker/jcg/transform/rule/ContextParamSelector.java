@@ -20,7 +20,7 @@ import java.util.List;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public final class ContextParamRule implements Rule<TypeMessage, String> {
+public final class ContextParamSelector implements TypeTransformerSelector {
 
     private String ctxParam;
 
@@ -49,7 +49,7 @@ public final class ContextParamRule implements Rule<TypeMessage, String> {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("ContextParamRule");
+        sb.append("ContextParamSelector");
         sb.append("{ctxParam='").append(ctxParam).append('\'');
         sb.append('}');
         return sb.toString();

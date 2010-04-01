@@ -16,7 +16,7 @@ public interface Rule<T, R> {
      * Applies a rule on obj and returns a result.
      *
      * @param obj the object the rule is applied to.
-     * @return the resulting values, or an empty list if the rule was not able to find one.
+     * @return the resulting value, or null if the rule was not able to find one.
      */
-    public List<R> apply(T obj);
+    public R apply(T obj);
 }

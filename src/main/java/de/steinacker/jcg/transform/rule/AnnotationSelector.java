@@ -19,7 +19,7 @@ import java.util.List;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public final class AnnotationRule implements Rule<TypeMessage, String> {
+public final class AnnotationSelector implements TypeTransformerSelector {
 
     private List<CharSequence> annotationNames;
     private List<String> defaultValue = Collections.emptyList();

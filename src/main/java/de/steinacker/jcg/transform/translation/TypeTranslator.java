@@ -67,7 +67,10 @@ public final class TypeTranslator implements TypeTransformer {
 
     private Method transform(final Method method) {
         final MethodBuilder mb = new MethodBuilder(method);
-        mb.setReturnTypeName(translateQualifiedName(method.getReturnTypeName()));
+        if (method.isConstructor())
+            mb.setReturnTypeName(null);
+        else
+            mb.setReturnTypeName(translateQualifiedName(method.getReturnTypeName()));
         mb.setParameters(new ArrayList<Parameter>());
         for (final Parameter parameter : method.getParameters()) {
             mb.addParameter(new ParameterBuilder()
@@ -82,7 +85,14 @@ public final class TypeTranslator implements TypeTransformer {
     }
 
     private Field transform(final Field field) {
-        return new FieldBuilder().setName(translateSimpleName(field.getName())).setTypeName(translateQualifiedName(field.getTypeName())).setAnnotations(field.getAnnotations()).setModifiers(field.getModifiers()).setComment(field.getComment()).toField();
+        return new FieldBuilder()
+                .setName(translateSimpleName(field.getName()))
+                .setTypeName(translateQualifiedName(field.getTypeName()))
+                .setInitString(field.getInitString())
+                .setAnnotations(field.getAnnotations())
+                .setModifiers(field.getModifiers())
+                .setComment(field.getComment())
+                .toField();
     }
 
     private SimpleName translateSimpleName(final SimpleName sourceName) {

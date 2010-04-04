@@ -9,6 +9,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.tree.JCTree;
 import de.steinacker.jcg.model.*;
 import org.apache.log4j.Logger;
 
@@ -151,55 +152,14 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
     @Override
     public TypeBuilder visitExecutable(ExecutableElement e, TypeBuilder typeBuilder) {
         scan(e.getTypeParameters(), typeBuilder); // Check the names of any type parameters
-
-        // Check the name of the executable
-        if (e.getKind() == METHOD) {
-            // Make sure that a method does not have the same
-            // name as its class or interface.
-            Name name = e.getSimpleName();
-            if (name.contentEquals(e.getEnclosingElement().getSimpleName()))
-                messager.printMessage(ERROR,
-                        "A method should not have the same name as its enclosing type, ``" +
-                                name + "''.", e);
-            final SimpleName methodName = new SimpleName(name.toString());
-            final QualifiedName returnType = QualifiedName.valueOf(e.getReturnType().toString());
-            final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
-            final List<QualifiedName> exceptions = new ArrayList<QualifiedName>(e.getThrownTypes().size());
-            for (TypeMirror typeMirror : e.getThrownTypes()) {
-                exceptions.add(QualifiedName.valueOf(typeMirror.toString()));
-            }
-            final List<Parameter> parameters = new ArrayList<Parameter>(e.getParameters().size());
-            for (VariableElement variableElement : e.getParameters()) {
-                // TODO: variableElement.getConstantValue();
-                //final String comment = "TODO!";
-                final Parameter param = new ParameterBuilder()
-                        .setTypeName(QualifiedName.valueOf(variableElement.asType().toString()))
-                        .setName(new SimpleName(variableElement.getSimpleName()))
-                        .setAnnotations(mapToAnnotations(variableElement.getAnnotationMirrors()))
-                        .setFinal(variableElement.getModifiers().contains(Modifier.FINAL))
-                        .setComment("")
-                        .toParameter();
-                parameters.add(param);
-            }
-            // TODO: e.getTypeParameters();
-            final EnumSet<MethodModifier> modifiers = mapToMethodModifiers(e);
-            final Method method = new MethodBuilder()
-                    .setName(methodName)
-                    .setAnnotations(annotations)
-                    .setModifiers(modifiers)
-                    .setExceptions(exceptions)
-                    .setReturnTypeName(returnType)
-                    .setParameters(parameters)
-                    .setMethodBody("throw new UnsupportedOperationException(\"Parsing of method bodies is not yet supported by jcg.\");")
-                    .toMethod();
-            typeBuilder.addMethod(method);
-        } else if (e.getKind() == CONSTRUCTOR) {
-            // TODO: Konstruktoren
-            System.out.println("CONSTRUCTOR " + e.getSimpleName().toString());
-        } else if (e.getKind() == STATIC_INIT) {
-            System.out.println("STATIC_INIT " + e.getSimpleName().toString());
-        } else if (e.getKind() == INSTANCE_INIT) {
-            System.out.println("INSTANCE_INIT " + e.getSimpleName().toString());
+        switch(e.getKind()) {
+            case METHOD:
+            case CONSTRUCTOR:
+                final Method method = mapToMethod(e);
+                typeBuilder.addMethod(method);
+                break;
+            default:
+                throw new UnsupportedOperationException("Don't know how to parse a " + e.getKind().name());
         }
 
         // At this point, could use the Tree API,
@@ -208,6 +168,55 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
 
         super.visitExecutable(e, typeBuilder);
         return typeBuilder;
+    }
+
+    private Method mapToMethod(final ExecutableElement e) {
+        final TreePath treePath = trees.getPath(e);
+        //final SourcePositions sourcePosition = trees.getSourcePositions();
+        //final CompilationUnitTree compilationUnit = treePath.getCompilationUnit();
+        //System.out.println("SourcePosition" + sourcePosition.getStartPosition(compilationUnit, tree));
+        final Tree tree = treePath.getLeaf();
+        final JCTree.JCMethodDecl jcTree = (JCTree.JCMethodDecl)tree;
+        final String b = jcTree.getBody().toString();
+        final String methodBody = b.substring(b.indexOf('{')+1, b.lastIndexOf('}')).trim();
+        
+        final String s = e.toString();
+        final SimpleName methodName = new SimpleName(s.substring(0, s.indexOf('(')));
+        final QualifiedName returnType;
+        if (e.getKind() == METHOD)
+            returnType = QualifiedName.valueOf(e.getReturnType().toString());
+        else
+            returnType = null;
+        final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
+        final List<QualifiedName> exceptions = new ArrayList<QualifiedName>(e.getThrownTypes().size());
+        for (TypeMirror typeMirror : e.getThrownTypes()) {
+            exceptions.add(QualifiedName.valueOf(typeMirror.toString()));
+        }
+        final List<Parameter> parameters = new ArrayList<Parameter>(e.getParameters().size());
+        for (VariableElement variableElement : e.getParameters()) {
+            // TODO: variableElement.getConstantValue();
+            //final String comment = "TODO!";
+            final Parameter param = new ParameterBuilder()
+                    .setTypeName(QualifiedName.valueOf(variableElement.asType().toString()))
+                    .setName(new SimpleName(variableElement.getSimpleName()))
+                    .setAnnotations(mapToAnnotations(variableElement.getAnnotationMirrors()))
+                    .setFinal(variableElement.getModifiers().contains(Modifier.FINAL))
+                    .setComment("")
+                    .toParameter();
+            parameters.add(param);
+        }
+        // TODO: e.getTypeParameters();
+        final EnumSet<MethodModifier> modifiers = mapToMethodModifiers(e);
+        final Method method = new MethodBuilder()
+                .setName(methodName)
+                .setAnnotations(annotations)
+                .setModifiers(modifiers)
+                .setExceptions(exceptions)
+                .setReturnTypeName(returnType)
+                .setParameters(parameters)
+                .setMethodBody(methodBody)
+                .toMethod();
+        return method;
     }
 
 
@@ -231,7 +240,19 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
             final EnumSet<FieldModifier> modifiers = mapToFieldModifiers(e);
             final String comment = "TODO!";
             final Object constantValue = e.getConstantValue();
-            typeBuilder.addField(new FieldBuilder().setName(name).setTypeName(typeName).setAnnotations(annotations).setModifiers(modifiers).setComment(comment).toField());
+            final TreePath treePath = trees.getPath(e);
+            final Tree tree = treePath.getLeaf();
+            final JCTree.JCVariableDecl jcTree = (JCTree.JCVariableDecl)tree;
+            final JCTree.JCExpression expression = jcTree.getInitializer();
+            final String initString = (expression != null) ? expression.toString() : null;
+            typeBuilder.addField(new FieldBuilder()
+                    .setName(name)
+                    .setTypeName(typeName)
+                    .setInitString(initString)
+                    .setAnnotations(annotations)
+                    .setModifiers(modifiers)
+                    .setComment(comment)
+                    .toField());
         }
         // A call to super can be elided with the current language definition.
         // super.visitVariable(e, typeBuilder);

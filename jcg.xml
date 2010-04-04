@@ -21,6 +21,7 @@
           <bean class="de.steinacker.jcg.transform.translation.TypeTranslator">
               <constructor-arg ref="glossary"/>
           </bean>
+          <bean class="de.steinacker.jcg.transform.type.RemoveSingleEmptyDefaultConstructor"/>
           <bean class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
           <bean class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
           <bean class="de.steinacker.jcg.transform.type.AddConstructors"/>
@@ -33,6 +34,7 @@
             <property name="name" value="Mutable" />
             <property name="transformers">
               <list>
+                  <value>RemoveSingleEmptyDefaultConstructor</value>
                   <value>TypeTranslator</value>
                   <value>PublicFinalClass</value>
                   <value>PrivatizeFields</value>
@@ -48,6 +50,7 @@
             <property name="name" value="Immutable" />
             <property name="transformers">
               <list>
+                  <value>RemoveSingleEmptyDefaultConstructor</value>
                   <value>TypeTranslator</value>
                   <value>PublicFinalClass</value>
                   <value>PrivatizeFields</value>

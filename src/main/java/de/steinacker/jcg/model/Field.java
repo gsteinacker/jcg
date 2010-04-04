@@ -23,6 +23,8 @@ public final class Field implements Annotatable {
     @Valid
     private final QualifiedName typeName;
     @NotNull
+    private final String initString;
+    @NotNull
     @Valid
     private final List<Annotation> annotations;
     @NotNull
@@ -30,18 +32,18 @@ public final class Field implements Annotatable {
     @NotNull
     private final String comment;
 
-    // TODO: default value
-
     public Field(final SimpleName name,
                  final QualifiedName typeName,
+                 final String initString,
                  final List<Annotation> annotations,
                  final Set<FieldModifier> modifiers,
                  final String comment) {
         this.name = name;
         this.typeName = typeName;
+        this.initString = initString != null ? initString : "";
         this.annotations = annotations;
         this.modifiers = modifiers;
-        this.comment = comment;
+        this.comment = comment != null ? comment : "";
     }
 
     public SimpleName getName() {
@@ -50,6 +52,10 @@ public final class Field implements Annotatable {
 
     public QualifiedName getTypeName() {
         return typeName;
+    }
+
+    public String getInitString() {
+        return initString;
     }
 
     public List<Annotation> getAnnotations() {
@@ -77,6 +83,7 @@ public final class Field implements Annotatable {
 
         if (!annotations.equals(field.annotations)) return false;
         if (!comment.equals(field.comment)) return false;
+        if (!initString.equals(field.initString)) return false;
         if (!modifiers.equals(field.modifiers)) return false;
         if (!name.equals(field.name)) return false;
         if (!typeName.equals(field.typeName)) return false;
@@ -88,6 +95,7 @@ public final class Field implements Annotatable {
     public int hashCode() {
         int result = name.hashCode();
         result = 31 * result + typeName.hashCode();
+        result = 31 * result + initString.hashCode();
         result = 31 * result + annotations.hashCode();
         result = 31 * result + modifiers.hashCode();
         result = 31 * result + comment.hashCode();
@@ -124,6 +132,9 @@ public final class Field implements Annotatable {
         sigBuilder.append(getTypeName().getSimpleName())
                 .append(" ")
                 .append(getName());
+        if (!initString.isEmpty()) {
+            sigBuilder.append(" = ").append(initString);
+        }
         return sigBuilder.toString();
     }
 }

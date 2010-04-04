@@ -9,6 +9,7 @@ import java.util.*;
 public final class FieldBuilder {
     private SimpleName name;
     private QualifiedName typeName;
+    private String initString;
     private List<Annotation> annotations;
     private Set<FieldModifier> modifiers;
     private String comment;
@@ -16,11 +17,14 @@ public final class FieldBuilder {
     public FieldBuilder() {
         annotations = new ArrayList<Annotation>();
         modifiers = new LinkedHashSet<FieldModifier>();
+        comment = "";
+        initString = "";
     }
 
     public FieldBuilder(final Field prototype) {
         name = prototype.getName();
         typeName = prototype.getTypeName();
+        initString = prototype.getInitString();
         annotations = new ArrayList<Annotation>(prototype.getAnnotations());
         modifiers = prototype.getModifiers().isEmpty()
                 ? EnumSet.noneOf(FieldModifier.class)
@@ -35,6 +39,11 @@ public final class FieldBuilder {
 
     public FieldBuilder setTypeName(QualifiedName typeName) {
         this.typeName = typeName;
+        return this;
+    }
+
+    public FieldBuilder setInitString(final String initString) {
+        this.initString = initString;
         return this;
     }
 
@@ -54,6 +63,6 @@ public final class FieldBuilder {
     }
 
     public Field toField() {
-        return new Field(name, typeName, annotations, modifiers, comment);
+        return new Field(name, typeName, initString, annotations, modifiers, comment);
     }
 }

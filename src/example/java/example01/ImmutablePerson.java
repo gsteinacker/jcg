@@ -23,9 +23,6 @@ public class ImmutablePerson {
     //@Property
     public String lastName;
 
-    // TODO: Warnung oder Fehler ausgeben? Kopieren?
-    private String ignoredAttribute;
-
     //@Method
     public String getName() {
         return new StringBuilder(firstName)

@@ -22,7 +22,12 @@ public class InitializationExample {
     }
     int i;
 
-    InitializationExample() {
+    public InitializationExample() {
         i = 2;
     }
+    
+    public InitializationExample(int i) {
+        this.i = i;
+    }
+
 }

@@ -6,7 +6,6 @@ package de.steinacker.jcg.model;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +30,6 @@ public final class Method implements Annotatable {
     @NotNull
     @Valid
     private final List<QualifiedName> exceptions;
-    @Null
     @Valid
     private final QualifiedName returnTypeName;
     @NotNull

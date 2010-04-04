@@ -9,13 +9,13 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.code.Attribute;
 import de.steinacker.jcg.model.*;
 import org.apache.log4j.Logger;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.ElementScanner6;
@@ -25,7 +25,6 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -396,9 +395,6 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
                     }
                 }
             }
-
-            if (!conventional)
-                error("A constant's name, ``" + name + "'', should be ALL_CAPS.", e);
         }
     }
 
@@ -418,38 +414,104 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         messager.printMessage(Diagnostic.Kind.ERROR, message, positionHint);
     }
 
-    private List<Annotation> mapToAnnotations(List<? extends AnnotationMirror> annotationMirrors) {
-        List<Annotation> annotations = new ArrayList<Annotation>(annotationMirrors.size());
-        for (final AnnotationMirror annotationMirror : annotationMirrors) {
-            final Map<String,Object> parameters = new LinkedHashMap<String, Object>();
-            final Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = elementUtils.getElementValuesWithDefaults(annotationMirror);
-            for (final ExecutableElement ee : elementValues.keySet()) {                
-                System.out.println("    simpleName: " + ee.getSimpleName());
-                final AnnotationValue annotationValue = elementUtils.getElementValuesWithDefaults(annotationMirror).get(ee);
-                System.out.println("    value: " + annotationValue.getValue());
-                final Object value = elementValues.get(ee).getValue();
-                if (com.sun.tools.javac.util.List.class.isAssignableFrom(value.getClass())) {
-                    com.sun.tools.javac.util.List l = com.sun.tools.javac.util.List.class.cast(value);
-                    for (Object o : l) {
-                        System.out.println(((Attribute.Constant)o).toString());
-                        System.out.println(((Attribute.Constant)o).getValue());
-                        parameters.put(ee.getSimpleName().toString(), ((Attribute.Constant)o).getValue());
-                    }
-                } else if (!value.getClass().equals(String.class)) {
-                    LOG.warn("Annotation value " + ee.getSimpleName() + " is not a String but a " + value.getClass() + ". Currently, only String-values are supported.");
-                } else {
-                    // TODO: andere Typen als String für Annotations zulassen!!!
-                    parameters.put(ee.getSimpleName().toString(), value);
-                    //System.out.println("    simpleName: " + ee.getSimpleName());
-                    //System.out.println("    value: " + annotationMirror.getElementValues().get(ee).getValue());
-                }
-            }
-            annotations.add(new Annotation(QualifiedName.valueOf(annotationMirror.getAnnotationType().toString()), parameters));
+    private List<Annotation> mapToAnnotations(List<? extends AnnotationMirror> javaxAnnotationMirrors) {
+        final List<Annotation> annotations = new ArrayList<Annotation>(javaxAnnotationMirrors.size());
+        for (final AnnotationMirror javaxAnnotationMirror : javaxAnnotationMirrors) {
+            annotations.add(mapToAnnotation(javaxAnnotationMirror));
         }
         return annotations;
     }
 
-    private static EnumSet<MethodModifier> mapToMethodModifiers(ExecutableElement e) {
+    private Annotation mapToAnnotation(final AnnotationMirror javaxAnnotationMirror) {
+        // 1. Name of the Annotation:
+        final QualifiedName annotationName = QualifiedName.valueOf(javaxAnnotationMirror.getAnnotationType().toString());
+        // 2. All the parameters (excluding default parameters) of the Annotation:
+        final List<AnnotationParameter> parameters = mapToAnnotationParameters(javaxAnnotationMirror, false);
+        // 3. All the parameters (including default parameters) of the Annotation:
+        final List<AnnotationParameter> defaults = new ArrayList<AnnotationParameter>();
+
+        final Annotation annotation = new Annotation(annotationName, parameters, defaults);
+        return annotation;
+    }
+
+    /**
+     * Maps the parameters of an AnnotationMirror to a list of AnnotationParameter instances.
+     * Depending on <code>withDefaults</code>, this list contains default parameters, or not.
+     * @param javaxAnnotationMirror the javax.lang.model.AnnotationMirror.
+     * @param withDefaults specifies if default parameters should be included or not.
+     * @return List<AnnotationParameter>
+     */
+    private List<AnnotationParameter> mapToAnnotationParameters(final AnnotationMirror javaxAnnotationMirror,
+                                                                final boolean withDefaults) {
+        final List<AnnotationParameter> parameters = new ArrayList<AnnotationParameter>();
+        // The Map containing all javax parameters of the annotation:
+        final Map<? extends ExecutableElement, ? extends AnnotationValue> javaxAnnotationParameters;
+        if (withDefaults)
+            javaxAnnotationParameters = elementUtils.getElementValuesWithDefaults(javaxAnnotationMirror);
+        else
+            javaxAnnotationParameters = javaxAnnotationMirror.getElementValues();
+
+        // Now we have to map all the parameters + values:
+        for (final ExecutableElement javaxAnnotationParameter : javaxAnnotationParameters.keySet()) {
+            // The name of the parameter:
+            final String paramName = javaxAnnotationParameter.getSimpleName().toString();
+            final AnnotationParameter parameter;
+
+            // the javaxAnnotationValue has two important informations: the Object javaxParameterValue, and a String
+            // representation of the javaxParameterValue, that we can use to generate source code:
+            final AnnotationValue javaxAnnotationValue = javaxAnnotationParameters.get(javaxAnnotationParameter);
+            // recursively map the javax AnnotationValue to an AnnotationValue. The recursion is
+            // necessary, so parameter values can be a list of values (groups={String.class, Integer.class})
+            final List<de.steinacker.jcg.model.AnnotationValue> annotationValues = mapToAnnotationValues(javaxAnnotationValue);
+            parameter = new AnnotationParameter(paramName, false, annotationValues);
+            parameters.add(parameter);
+        }
+        return parameters;
+    }
+
+    /**
+     * Maps a javax.lang.model.AnnotationValue to an AnnotationValue.
+     *
+     * @param javaxAnnotationValue the javaxAnnotationValue
+     * @return AnnotationValue
+     */
+    private List<de.steinacker.jcg.model.AnnotationValue> mapToAnnotationValues(final AnnotationValue javaxAnnotationValue) {
+        final Object javaxParameterValue = javaxAnnotationValue.getValue();
+        final List<de.steinacker.jcg.model.AnnotationValue> annotationValues
+                = new ArrayList<de.steinacker.jcg.model.AnnotationValue>();
+        if (javaxParameterValue instanceof List) {
+            // javaxParameterValue is a List<? extends AnnotationValue>
+            final List<AnnotationValue> l = (List<AnnotationValue>) javaxParameterValue;
+            for (AnnotationValue o : l) {
+                // recursively map the single value to an AnnotationValue:
+                annotationValues.addAll(mapToAnnotationValues(o));
+            }
+        } else if (javaxParameterValue instanceof AnnotationMirror) {
+            // javaxParameterValue is an AnnotationMirror - recursively create an Annotation:
+            final Annotation annotation = mapToAnnotation((AnnotationMirror) javaxParameterValue);
+            annotationValues.add(new de.steinacker.jcg.model.AnnotationValue(annotation, javaxAnnotationValue.toString()));
+        } else if (javaxParameterValue instanceof VariableElement) {
+            // javaxParameterValue is a VariableElement (representing an enum constant):
+            final VariableElement javaxEnumConstant = (VariableElement)javaxParameterValue;
+            final Object constantValue = javaxEnumConstant.getConstantValue();
+            annotationValues.add(new de.steinacker.jcg.model.AnnotationValue(constantValue, javaxAnnotationValue.toString()));
+        } else if (javaxParameterValue instanceof TypeMirror) {
+            // javaxParameterValue is a TypeMirror:
+            final TypeMirror javaxTypeMirror = (TypeMirror)javaxParameterValue;
+            // TODO: TypeMirror!
+            final QualifiedName typeName = QualifiedName.valueOf(javaxTypeMirror.toString());
+            annotationValues.add(new de.steinacker.jcg.model.AnnotationValue(typeName, javaxAnnotationValue.toString()));
+        } else {
+            // javaxParameterValue is a wrapper class (such as Integer) for a primitive type:
+            annotationValues.add(new de.steinacker.jcg.model.AnnotationValue(javaxParameterValue, javaxAnnotationValue.toString()));
+
+            //System.out.println("    simpleName: " + javaxAnnotationParameter.getSimpleName());
+            //System.out.println("    javaxParameterValue: " + javaxAnnotationMirror.getElementValues().get(javaxAnnotationParameter).getValue());
+        }
+        return annotationValues;
+    }
+
+    private EnumSet<MethodModifier> mapToMethodModifiers(ExecutableElement e) {
         final EnumSet<MethodModifier> modifiers = EnumSet.noneOf(MethodModifier.class);
         for (final Modifier modifier : e.getModifiers()) {
             modifiers.add(MethodModifier.valueOf(modifier.name()));
@@ -457,7 +519,7 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         return modifiers;
     }
 
-    private static EnumSet<FieldModifier> mapToFieldModifiers(VariableElement e) {
+    private EnumSet<FieldModifier> mapToFieldModifiers(VariableElement e) {
         final EnumSet<FieldModifier> modifiers = EnumSet.noneOf(FieldModifier.class);
         for (final Modifier modifier : e.getModifiers()) {
             modifiers.add(FieldModifier.valueOf(modifier.name()));

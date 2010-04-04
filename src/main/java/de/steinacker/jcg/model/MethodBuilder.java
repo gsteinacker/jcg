@@ -34,7 +34,7 @@ public final class MethodBuilder {
         this.name = prototype.getName();
         this.comment = prototype.getComment();
         this.annotations = new ArrayList<Annotation>(prototype.getAnnotations());
-        this.modifiers = EnumSet.copyOf(prototype.getModifiers());
+        this.modifiers = prototype.getModifiers().isEmpty() ? EnumSet.noneOf(MethodModifier.class) : EnumSet.copyOf(prototype.getModifiers());
         this.exceptions = new ArrayList<QualifiedName>(prototype.getExceptions());
         this.returnTypeName = prototype.getReturnTypeName();
         this.parameters = new ArrayList<Parameter>(prototype.getParameters());

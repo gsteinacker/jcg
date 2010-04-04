@@ -12,6 +12,5 @@ import de.steinacker.jcg.annotation.TransformWith;
  */
 @TransformWith({"AddGetters", "AddSetters"})
 public class Artikel {
-    long serialVersionUID;
     Preis preis;
 }

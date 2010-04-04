@@ -7,9 +7,7 @@ package de.steinacker.jcg.model;
 import javax.annotation.Generated;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Code analyzer model for storing details of annotation
@@ -24,37 +22,58 @@ public final class Annotation {
     @Valid
     private final QualifiedName name;
     @NotNull
-    private final Map<String, Object> parameters = new LinkedHashMap<String, Object>();
-    // TODO Annotations sind etwas komplizierter; es werden nich nur String Werte zugelassen.
+    @Valid
+    private final List<AnnotationParameter> parameters;
+    @NotNull
+    @Valid
+    private final List<AnnotationParameter> defaults;
 
-    public Annotation(final QualifiedName name) {
+    public Annotation(final QualifiedName name,
+                      final List<AnnotationParameter> parameters,
+                      final List<AnnotationParameter> defaults) {
         this.name = name;
-    }
-
-    public Annotation(final QualifiedName name, final Object value) {
-        this.name = name;
-        this.parameters.put(VALUE_PARAM, value);
-    }
-
-    public Annotation(final QualifiedName name, final Map<String, ?> parameters) {
-        this.name = name;
-        this.parameters.putAll(parameters);
+        this.parameters = new ArrayList<AnnotationParameter>(parameters);
+        this.defaults = new ArrayList<AnnotationParameter>(defaults);
     }
 
     public QualifiedName getName() {
         return name;
     }
 
-    public Object getValue() {
-        return parameters.containsKey(VALUE_PARAM) ? parameters.get(VALUE_PARAM) : "";
+    /**
+     * Returns an unmodifiable list containing all AnnotationParameters of this Annotation.
+     * If withDefaults is true, the list will also contain default parameters (that is, parameters
+     * with a default value, which do neither occur in the parsed source code, nor in the
+     * generated source code.
+     * <p>
+     * If there are no parameters, the returned list will be empty.
+     * @param withDefaults specifies whether the results will contain default parameters.
+     * @return unmodifiable list containing AnnotationParameters.
+     */
+    public List<AnnotationParameter> getParameters(final boolean withDefaults) {
+        if (withDefaults)
+            return Collections.unmodifiableList(defaults);
+        else
+            return Collections.unmodifiableList(parameters);
     }
 
-    public Map<String, Object> getParameters() {
-        return Collections.unmodifiableMap(parameters);
-    }
-
-    public Object getParameter(final String name) {
-        return parameters.get(name);
+    /**
+     * Returns the AnnotationParameter with the specified name.
+     * If withDefaults is true, also a default parameter will be returned (that is, a parameter
+     * with a default value, which do neither occur in the parsed source code, nor in the
+     * generated source code.
+     * <p>
+     * If the parameter does not exist, null is returned.
+     * @param name the name of the requested parameter
+     * @param withDefaults specifies whether the results will contain default parameters.
+     * @return the requested AnnotationParameter or null, if this parameter does not exist.
+     */
+    public AnnotationParameter getParameter(final String name, final boolean withDefaults) {
+        for (final AnnotationParameter parameter : (withDefaults ? defaults : parameters)) {
+            if (parameter.getName().equals(name))
+                return parameter;
+        }
+        return null;
     }
 
     @Override
@@ -80,17 +99,31 @@ public final class Annotation {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("@").append(name.getSimpleName());
-        if (parameters.size() == 1 && parameters.containsKey(VALUE_PARAM))
-            sb.append("(\"").append(parameters.get(VALUE_PARAM)).append("\")");
-        if (parameters.size() > 1) {
+        if (parameters.size() == 1) {
             sb.append('(');
-            boolean first = true;
-            for (final Map.Entry<String, Object> entry : parameters.entrySet()) {
-                if (!first) {
+            final AnnotationParameter valueParameter = getParameter("value", false);
+            if(valueParameter != null) {
+                // the prefix "value=" is not needed if it is the only parameter (value=42):
+                String param = valueParameter.toString();
+                param = param.substring("value=".length());
+                // if the value is a list of multiple values, we can also omit the curly braces;
+                if (valueParameter.getValues().size() > 1)
+                    param = param.substring(1, param.length()-1);
+                sb.append(param);
+            } else {
+                // all other parameters must contain the parameter's name (foo=42):
+                sb.append(parameters.get(0).toString());
+            }
+            sb.append(')');
+        } else if (parameters.size() > 1) {
+            // more than one parameter (value=42, foo=42):
+            sb.append('(');
+            final Iterator<AnnotationParameter> params = parameters.iterator();
+            while (params.hasNext()) {
+                final AnnotationParameter param = params.next();
+                sb.append(param.toString());
+                if (params.hasNext())
                     sb.append(", ");
-                }
-                first = false;
-                sb.append(entry.getKey()).append("=\"").append(entry.getValue()).append('"');
             }
             sb.append(')');
         }

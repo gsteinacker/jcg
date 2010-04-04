@@ -41,10 +41,10 @@ public final class AnnotationSelector implements TypeTransformerSelector {
         for (final Annotation annotation : param.getPayload().getAnnotations()) {
             if (annotationNames.contains(annotation.getName().toString())) {
                 final Object result;
-                if (annotation.getParameter("transformWith") != null)
-                    result = annotation.getParameter("transformWith");
+                if (annotation.getParameter("transformWith", true) != null)
+                    result = annotation.getParameter("transformWith", true);
                 else if (annotation.getName().toString().equals("de.steinacker.jcg.annotation.TransformWith"))
-                    result = annotation.getValue();
+                    result = annotation.getParameter("value", true);
                 else
                     result = null;
                 if (result != null) {

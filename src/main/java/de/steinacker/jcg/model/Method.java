@@ -146,6 +146,7 @@ public final class Method implements Annotatable {
     @Override
     public String toString() {
         final StringBuilder sigBuilder = new StringBuilder();
+        // TODO: wenn modifiers "korrekt" sortiert sind, geht das hier deutlich einfacher...
         if (modifiers.contains(PUBLIC))
             sigBuilder.append("public ");
         if (modifiers.contains(PROTECTED))

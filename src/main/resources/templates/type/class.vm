@@ -12,11 +12,17 @@ $annotation
 $type.toString() {
 
 #foreach( $attribute in $type.fields )
+#foreach($annotation in $attribute.annotations)
+    $annotation
+#end
     $attribute.toString();
 #end
 #foreach( $method in $type.methods )
 #if( $method.isConstructor() )
-
+    
+#foreach($annotation in $method.annotations)
+    $annotation
+#end
     $method.toString() {
 $codeUtil.indent($method.methodBody, 2)
     }
@@ -24,11 +30,13 @@ $codeUtil.indent($method.methodBody, 2)
 #end
 #foreach( $method in $type.methods )
 #if(!$method.isConstructor())
-#if( $method.abstract)
 
+#foreach($annotation in $method.annotations)
+    $annotation
+#end
+#if( $method.abstract)
     $method.toString();
 #else
-
     $method.toString() {
 $codeUtil.indent($method.methodBody, 2)
     }

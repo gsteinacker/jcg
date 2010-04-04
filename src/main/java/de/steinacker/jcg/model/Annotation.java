@@ -4,10 +4,12 @@
 
 package de.steinacker.jcg.model;
 
-import javax.annotation.Generated;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Code analyzer model for storing details of annotation

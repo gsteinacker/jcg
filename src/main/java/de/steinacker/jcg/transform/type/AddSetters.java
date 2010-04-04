@@ -43,6 +43,10 @@ public final class AddSetters extends AbstractFieldToMethodTransformer implement
 
     @Override
     protected Method transformFieldToMethod(final Field field, final Context context) {
+        // no setters for final or static fields:
+        if (field.is(FieldModifier.FINAL) || field.is(FieldModifier.STATIC))
+            return null;
+
         final MethodBuilder mb = new MethodBuilder();
         // Alle Getter sind public:
         mb.addModifier(MethodModifier.PUBLIC);

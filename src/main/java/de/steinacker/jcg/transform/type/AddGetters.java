@@ -11,6 +11,9 @@ import de.steinacker.jcg.util.FormatStringProvider;
 import de.steinacker.jcg.util.NameUtil;
 import org.apache.log4j.Logger;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 /**
  * A ModelTransformer which adds getter methods for all non-static attributes of the different types.
  * <p/>
@@ -43,6 +46,10 @@ public final class AddGetters extends AbstractFieldToMethodTransformer implement
 
     @Override
     protected Method transformFieldToMethod(final Field field, final Context context) {
+        // no getters for static fields:
+        if (field.is(FieldModifier.STATIC))
+            return null;
+
         final MethodBuilder mb = new MethodBuilder();
         // Alle Getter sind public:
         mb.addModifier(MethodModifier.PUBLIC);

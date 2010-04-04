@@ -8,7 +8,10 @@ import de.steinacker.jcg.model.*;
 import org.apache.log4j.Logger;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 /**
  * A ModelTransformer which adds a @Generated annotations to the type.

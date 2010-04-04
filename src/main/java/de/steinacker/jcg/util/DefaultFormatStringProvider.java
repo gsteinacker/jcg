@@ -2,7 +2,6 @@ package de.steinacker.jcg.util;
 
 import de.steinacker.jcg.model.QualifiedName;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

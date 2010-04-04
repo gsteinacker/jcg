@@ -6,7 +6,6 @@ package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.Context;
 import de.steinacker.jcg.model.Field;
-import de.steinacker.jcg.model.FieldModifier;
 import de.steinacker.jcg.model.Method;
 import org.apache.log4j.Logger;
 

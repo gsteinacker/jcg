@@ -4,8 +4,6 @@
 
 package de.steinacker.jcg.transform.rule;
 
-import java.util.List;
-
 /**
  * @author Guido Steinacker
  * @version %version: 28 %

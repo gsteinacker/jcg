@@ -1,7 +1,6 @@
 package de.steinacker.jcg.transform.rule;
 
 import de.steinacker.jcg.transform.model.ModelMessage;
-import de.steinacker.jcg.transform.type.TypeMessage;
 
 import java.util.List;
 

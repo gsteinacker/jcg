@@ -4,7 +4,6 @@
 
 package de.steinacker.jcg.transform.type;
 
-import de.steinacker.jcg.transform.rule.Rule;
 import de.steinacker.jcg.transform.rule.TypeTransformerSelector;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;

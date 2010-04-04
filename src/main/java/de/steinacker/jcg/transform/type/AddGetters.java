@@ -11,9 +11,6 @@ import de.steinacker.jcg.util.FormatStringProvider;
 import de.steinacker.jcg.util.NameUtil;
 import org.apache.log4j.Logger;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 /**
  * A ModelTransformer which adds getter methods for all non-static attributes of the different types.
  * <p/>

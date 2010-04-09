@@ -91,6 +91,15 @@ ID      Prio    Description
 100       3     Implementing merging of models with focus on merging manual changes into generated code.
 
 ---------------------------------------------------------------------------------------------------
+Release 0.6: IDE + ANT Integration
+---------------------------------------------------------------------------------------------------
+ID      Prio    Description
+---------------------------------------------------------------------------------------------------
+          5     Eclipse integration (Generate a folder, a package or a single class)
+          5     IntelliJ IDEA integration (Generate a folder, a package or a single class)
+          5     ANT Integration
+
+---------------------------------------------------------------------------------------------------
 Unspecified:
 ---------------------------------------------------------------------------------------------------
 ID      Prio    Description
@@ -99,4 +108,3 @@ ID      Prio    Description
           5     Use Xtext (http://www.eclipse.org/Xtext/) to generate more sophisticated things.
           3     XML/JAXB support, generation of XSDs.
           3     Add configurable Comparators to define the sorting of fields, methods, imports, ...
-          5     Implement IDE integration like a Plugin (Generate a folder, a package or a single class)

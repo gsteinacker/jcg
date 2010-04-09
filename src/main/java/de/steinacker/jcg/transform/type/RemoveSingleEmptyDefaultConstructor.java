@@ -7,6 +7,7 @@ package de.steinacker.jcg.transform.type;
 import de.steinacker.jcg.model.Method;
 import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.model.TypeBuilder;
+import de.steinacker.jcg.util.TransformerUtil;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -32,21 +33,7 @@ public final class RemoveSingleEmptyDefaultConstructor implements TypeTransforme
     @Override
     public TypeMessage transform(final TypeMessage message) {
         final Type type = message.getPayload();
-        boolean singleEmptyDefaultConstructor = false;
-        int count = 0;
-        for (final Method method : type.getMethods()) {
-            if (method.isConstructor()) {
-                ++count;
-                // more than one constructor
-                if (count > 1)
-                    return message;
-                else {
-                    if (method.getParameters().size() == 0 && method.getMethodBody().trim().equals("super();"))
-                        singleEmptyDefaultConstructor = true;
-                }
-            }
-        }
-        if (singleEmptyDefaultConstructor) {
+        if (TransformerUtil.hasSingleEmptyDefaultConstructor(type)) {
             final List<Method> methods = new ArrayList<Method>();
             for (final Method method : type.getMethods()) {
                 if (!method.isConstructor())

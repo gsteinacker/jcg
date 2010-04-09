@@ -55,7 +55,7 @@ public final class AddGetters extends AbstractFieldToMethodTransformer implement
             mb.addModifier(MethodModifier.FINAL);
         // Der Name der Methode:
         final String fieldName = field.getName().toString();
-        mb.setName(new SimpleName("get" + NameUtil.toCamelHumpName(fieldName, true)));
+        mb.setName(SimpleName.valueOf("get" + NameUtil.toCamelHumpName(fieldName, true)));
         // Der Return-Type der Methode:
         mb.setReturnTypeName(field.getTypeName());
         final String formatString = formatStringProvider.getFormatForGetter(field.getTypeName());

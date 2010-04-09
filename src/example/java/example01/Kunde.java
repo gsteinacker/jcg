@@ -10,7 +10,8 @@ import de.steinacker.jcg.annotation.TransformWith;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-@TransformWith ("Mutable")
+@TransformWith ("Immutable")
 public class Kunde {
     long kundennummer;
+
 }

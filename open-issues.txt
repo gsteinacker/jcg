@@ -13,7 +13,7 @@ ID      Prio    Description
 ---------------------------------------------------------------------------------------------------
 11        1     Implement generic types.
 13        2     Remove unused code and debugging output (especially to System.out)
-15        1     Implement support for array-types in fields and parameters.
+15        1     Implement support for arrays in fields and parameters.
 16        1     Implement generation of useful comments, including descriptions from the glossary.
 21        2     Parsing + generation of interfaces
 22        2     Parsing + generation of enums
@@ -77,6 +77,11 @@ ID      Prio    Description
 82        3     Add missing unit tests to jcg sources
 83        3     Add some documentation
 20        4     Add some examples illustrating the current features
+84        3     Simplify the configuration of the transformers. Separate the transformer
+                configuration from the rest of the config, provide a facility to extend the
+                transformer configuration.
+85        2     Provide a build.xml to build the sources.
+86        2     Ant integration with examples on how to transform code using Ant.
 
 ---------------------------------------------------------------------------------------------------
 Release 0.5: Support manual changes of generated code
@@ -90,8 +95,6 @@ Unspecified:
 ---------------------------------------------------------------------------------------------------
 ID      Prio    Description
 ---------------------------------------------------------------------------------------------------
-          3     Simplify the configuration of the transformers, for example by using a DSL or
-                Spring namespaces.
           4     Add Transformers + Generators for XML/XSD/WSDL
           5     Use Xtext (http://www.eclipse.org/Xtext/) to generate more sophisticated things.
           3     XML/JAXB support, generation of XSDs.

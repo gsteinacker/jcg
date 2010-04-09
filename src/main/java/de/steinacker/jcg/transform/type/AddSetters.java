@@ -55,7 +55,7 @@ public final class AddSetters extends AbstractFieldToMethodTransformer implement
             mb.addModifier(MethodModifier.FINAL);
         // Der Name der Methode:
         final String fieldName = field.getName().toString();
-        mb.setName(new SimpleName("set" + NameUtil.toCamelHumpName(fieldName, true)));
+        mb.setName(SimpleName.valueOf("set" + NameUtil.toCamelHumpName(fieldName, true)));
         // Der Parameter für den setter
         mb.addParameter(new ParameterBuilder()
                 .setComment(field.getTypeName().getSimpleName().toString())

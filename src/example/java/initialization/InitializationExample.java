@@ -26,8 +26,8 @@ public class InitializationExample {
         i = 2;
     }
     
-    public InitializationExample(int i) {
-        this.i = i;
+    public InitializationExample(int j) {
+        this.i = j;
     }
 
 }

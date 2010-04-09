@@ -99,7 +99,7 @@ public final class TypeTranslator implements TypeTransformer {
         if (glossary.hasTranslation(sourceName, glossary.getSourceLanguage())) {
             final String translation = glossary.getTranslation(sourceName, glossary.getSourceLanguage());
             final boolean firstUpperCase = NameUtil.isFirstUpperCase(sourceName);
-            return new SimpleName(NameUtil.toCamelHumpName(translation, firstUpperCase));
+            return SimpleName.valueOf(NameUtil.toCamelHumpName(translation, firstUpperCase));
         } else {
             return sourceName;
         }

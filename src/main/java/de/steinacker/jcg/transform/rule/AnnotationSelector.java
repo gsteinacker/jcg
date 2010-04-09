@@ -5,6 +5,8 @@
 package de.steinacker.jcg.transform.rule;
 
 import de.steinacker.jcg.model.Annotation;
+import de.steinacker.jcg.model.AnnotationParameter;
+import de.steinacker.jcg.model.AnnotationValue;
 import de.steinacker.jcg.transform.type.TypeMessage;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -40,7 +42,7 @@ public final class AnnotationSelector implements TypeTransformerSelector {
     public List<String> apply(final TypeMessage param) {
         for (final Annotation annotation : param.getPayload().getAnnotations()) {
             if (annotationNames.contains(annotation.getName().toString())) {
-                final Object result;
+                final AnnotationParameter result;
                 if (annotation.getParameter("transformWith", true) != null)
                     result = annotation.getParameter("transformWith", true);
                 else if (annotation.getName().toString().equals("de.steinacker.jcg.annotation.TransformWith"))
@@ -48,12 +50,12 @@ public final class AnnotationSelector implements TypeTransformerSelector {
                 else
                     result = null;
                 if (result != null) {
-                    if (result.getClass().equals(String.class))
-                        return Collections.singletonList((String) result);
-                    if (result.getClass().isArray())
-                        return Arrays.asList((String[])result);
-                    if (List.class.isAssignableFrom(result.getClass()))
-                        return (List<String>) result;
+                    final List<AnnotationValue> values = result.getValues();
+                    final List<String> selection = new ArrayList<String>(values.size());
+                    for (AnnotationValue annotationValue : values) {
+                        selection.add(annotationValue.getValue().toString());
+                    }
+                    return selection;
                 }
             }
         }

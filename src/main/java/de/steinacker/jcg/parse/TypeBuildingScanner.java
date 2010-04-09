@@ -181,7 +181,7 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         final String methodBody = b.substring(b.indexOf('{')+1, b.lastIndexOf('}')).trim();
         
         final String s = e.toString();
-        final SimpleName methodName = new SimpleName(s.substring(0, s.indexOf('(')));
+        final SimpleName methodName = SimpleName.valueOf(s.substring(0, s.indexOf('(')));
         final QualifiedName returnType;
         if (e.getKind() == METHOD)
             returnType = QualifiedName.valueOf(e.getReturnType().toString());
@@ -198,7 +198,7 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
             //final String comment = "TODO!";
             final Parameter param = new ParameterBuilder()
                     .setTypeName(QualifiedName.valueOf(variableElement.asType().toString()))
-                    .setName(new SimpleName(variableElement.getSimpleName()))
+                    .setName(SimpleName.valueOf(variableElement.getSimpleName()))
                     .setAnnotations(mapToAnnotations(variableElement.getAnnotationMirrors()))
                     .setFinal(variableElement.getModifiers().contains(Modifier.FINAL))
                     .setComment("")
@@ -227,32 +227,31 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
     public TypeBuilder visitVariable(VariableElement e, TypeBuilder typeBuilder) {
         if (!checkForSerial(e)) { // serialVersionUID checks
             // Is the variable a constant?
-            if (e.getKind() == ENUM_CONSTANT ||
-                    e.getConstantValue() != null ||
-                    heuristicallyConstant(e)) {
+            final ElementKind kind = e.getKind();
+            if (kind == ENUM_CONSTANT || e.getConstantValue() != null || heuristicallyConstant(e)) {
                 checkAllCaps(e); // includes enum constants                
-            } else if (e.getKind() == FIELD) {
-                // Hu?
             }
-            final SimpleName name = new SimpleName(e.getSimpleName().toString());
-            final QualifiedName typeName = QualifiedName.valueOf(e.asType().toString());
-            final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
-            final EnumSet<FieldModifier> modifiers = mapToFieldModifiers(e);
-            final String comment = "TODO!";
-            final Object constantValue = e.getConstantValue();
-            final TreePath treePath = trees.getPath(e);
-            final Tree tree = treePath.getLeaf();
-            final JCTree.JCVariableDecl jcTree = (JCTree.JCVariableDecl)tree;
-            final JCTree.JCExpression expression = jcTree.getInitializer();
-            final String initString = (expression != null) ? expression.toString() : null;
-            typeBuilder.addField(new FieldBuilder()
-                    .setName(name)
-                    .setTypeName(typeName)
-                    .setInitString(initString)
-                    .setAnnotations(annotations)
-                    .setModifiers(modifiers)
-                    .setComment(comment)
-                    .toField());
+            if (e.getKind() == FIELD) {
+                final SimpleName name = SimpleName.valueOf(e.getSimpleName().toString());
+                final QualifiedName typeName = QualifiedName.valueOf(e.asType().toString());
+                final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
+                final EnumSet<FieldModifier> modifiers = mapToFieldModifiers(e);
+                final String comment = "TODO!";
+                final Object constantValue = e.getConstantValue();
+                final TreePath treePath = trees.getPath(e);
+                final Tree tree = treePath.getLeaf();
+                final JCTree.JCVariableDecl jcTree = (JCTree.JCVariableDecl)tree;
+                final JCTree.JCExpression expression = jcTree.getInitializer();
+                final String initString = (expression != null) ? expression.toString() : null;
+                typeBuilder.addField(new FieldBuilder()
+                        .setName(name)
+                        .setTypeName(typeName)
+                        .setInitString(initString)
+                        .setAnnotations(annotations)
+                        .setModifiers(modifiers)
+                        .setComment(comment)
+                        .toField());
+            }
         }
         // A call to super can be elided with the current language definition.
         // super.visitVariable(e, typeBuilder);
@@ -445,10 +444,9 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         // 2. All the parameters (excluding default parameters) of the Annotation:
         final List<AnnotationParameter> parameters = mapToAnnotationParameters(javaxAnnotationMirror, false);
         // 3. All the parameters (including default parameters) of the Annotation:
-        final List<AnnotationParameter> defaults = new ArrayList<AnnotationParameter>();
+        final List<AnnotationParameter> defaults = mapToAnnotationParameters(javaxAnnotationMirror, true);
 
-        final Annotation annotation = new Annotation(annotationName, parameters, defaults);
-        return annotation;
+        return new Annotation(annotationName, parameters, defaults);
     }
 
     /**

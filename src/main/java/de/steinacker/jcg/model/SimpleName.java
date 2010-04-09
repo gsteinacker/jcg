@@ -6,6 +6,7 @@ package de.steinacker.jcg.model;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.*;
 
 /**
  * A simple name with support of camel-hump names.
@@ -15,11 +16,24 @@ import javax.validation.constraints.Pattern;
  * @version %version: 28 %
  */
 public final class SimpleName implements CharSequence, Comparable<SimpleName> {
+
+    private static final Map<CharSequence, SimpleName> INSTANCES
+            = Collections.synchronizedMap(new HashMap<CharSequence, SimpleName>());
+
     @NotNull
     @Pattern(regexp = "[a-zA-Z_][a-zA-Z_0-9]*")
     private String name;
 
-    public SimpleName(final CharSequence name) {
+    public static SimpleName valueOf(final CharSequence name) {
+        if (name == null)
+            throw new NullPointerException("Parameter must not be null!");
+        if (!INSTANCES.containsKey(name)) {
+            INSTANCES.put(name, new SimpleName(name));
+        }
+        return INSTANCES.get(name);
+    }
+
+    private SimpleName(final CharSequence name) {
         this.name = name.toString();
     }
 

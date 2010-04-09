@@ -85,7 +85,7 @@ public final class QualifiedName implements CharSequence, Comparable<QualifiedNa
         final String simpleName = qualifiedName.substring(
                 1 + qualifiedName.lastIndexOf("."),
                 qualifiedName.length());
-        return new SimpleName(simpleName);
+        return SimpleName.valueOf(simpleName);
     }
 
     public String getPackage() {

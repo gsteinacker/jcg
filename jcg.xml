@@ -24,7 +24,17 @@
           <bean class="de.steinacker.jcg.transform.type.RemoveSingleEmptyDefaultConstructor"/>
           <bean class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
           <bean class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
-          <bean class="de.steinacker.jcg.transform.type.AddConstructors"/>
+          <bean class="de.steinacker.jcg.transform.type.AddConstructors">
+              <property name="name" value="AddConstructorsForMutable" />
+              <property name="onlyFinalFields" value="false" />
+              <property name="generateDefaultConstructor" value="true" />
+          </bean>
+          <bean class="de.steinacker.jcg.transform.type.AddConstructors">
+              <property name="name" value="AddConstructorsForImmutable" />
+              <property name="onlyFinalFields" value="false" />
+              <property name="finalAndNonFinalFields" value="true" />
+              <property name="generateDefaultConstructor" value="true" />
+          </bean>
           <bean class="de.steinacker.jcg.transform.type.AddGetters"/>
           <bean class="de.steinacker.jcg.transform.type.AddGeneratedAnnotation"/>
           <bean class="de.steinacker.jcg.transform.type.RemoveJcgAnnotations"/>
@@ -38,7 +48,7 @@
                   <value>TypeTranslator</value>
                   <value>PublicFinalClass</value>
                   <value>PrivatizeFields</value>
-                  <value>AddConstructors</value>
+                  <value>AddConstructorsForMutable</value>
                   <value>AddGetters</value>
                   <value>AddGeneratedAnnotation</value>
                   <!--<value>removeJcgAnnotations</value>-->
@@ -54,11 +64,11 @@
                   <value>TypeTranslator</value>
                   <value>PublicFinalClass</value>
                   <value>PrivatizeFields</value>
-                  <value>AddConstructors</value>
+                  <value>FinalizeFields</value>
+                  <value>AddConstructorsForImmutable</value>
                   <value>AddGetters</value>
                   <value>AddGeneratedAnnotation</value>
                   <!--<value>removeJcgAnnotations</value>-->
-                  <value>FinalizeFields</value>
               </list>
             </property>
           </bean>

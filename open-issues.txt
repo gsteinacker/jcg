@@ -21,6 +21,8 @@ ID      Prio    Description
 24        2     Parsing, transformation + generation of thrown exceptions (=> methods)
 25        3     Support nested types
 26        2     Initialization blocks (static and non-static).
+27        3     Parsing + generation of nested classes.
+28        3     Parsing + generation of inheritance (incl. implementation of interfaces).
 
 ---------------------------------------------------------------------------------------------------
 Release 0.2: More transformers

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2010 by Guido Steinacker
+  -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <bean id="transformerProvider" class="de.steinacker.jcg.transform.type.TypeTransformerProvider">
+        <property name="transformers">
+            <list>
+                <ref bean="typeTranslator"/>
+                <ref bean="removeSingleEmptyDefaultConstructor"/>
+                <ref bean="publicFinalClass" />
+                <ref bean="privatizeFields" />
+                <ref bean="addConstructors" />
+                <ref bean="addGetters" />
+                <ref bean="addGeneratedAnnotation" />
+                <ref bean="removeJcgAnnotations" />
+                <ref bean="addSetters" />
+                <ref bean="finalizeFields" />
+                <ref bean="mutable" />
+                <ref bean="immutable" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="glossaryFactory" class="de.steinacker.jcg.transform.translation.JaxbGlossaryFactory"/>
+
+    <bean id="glossary" factory-bean="glossaryFactory" factory-method="glossary"/>
+
+    <bean id="typeTranslator"
+          class="de.steinacker.jcg.transform.translation.TypeTranslator">
+        <constructor-arg ref="glossary"/>
+    </bean>
+
+    <bean id="removeSingleEmptyDefaultConstructor" class="de.steinacker.jcg.transform.type.RemoveSingleEmptyDefaultConstructor"/>
+
+    <bean id="publicFinalClass" class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
+
+    <bean id="privatizeFields" class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
+
+    <!-- Adds a constructor with parameters for every attribute of the type. If
+         some of the attributes are final and some are not, a second constructor
+         is generated, with parameters for only the final attributes.
+         If there are no final attributes, an empty default constructor is
+         generated.
+    -->
+    <bean id="addConstructors"
+          class="de.steinacker.jcg.transform.type.AddConstructors">
+        <property name="name" value="AddConstructors"/>
+        <property name="onlyFinalFields" value="false"/>
+        <property name="finalAndNonFinalFields" value="true"/>
+        <property name="generateDefaultConstructor" value="true"/>
+    </bean>
+
+    <bean id="addGetters" class="de.steinacker.jcg.transform.type.AddGetters"/>
+
+    <bean id="addGeneratedAnnotation" class="de.steinacker.jcg.transform.type.AddGeneratedAnnotation">
+        <property name="name" value="AddGeneratedAnnotation" />
+        <property name="comments" value="" />
+    </bean>
+
+    <bean id="removeJcgAnnotations" class="de.steinacker.jcg.transform.type.RemoveAnnotations">
+        <property name="name" value="RemoveJcgAnnotations" />
+        <property name="classNames">
+            <list>
+                <value>javax.annotation.Generated</value>
+            </list>
+        </property>
+        <property name="packageNames">
+            <list>
+                <value>de.steinacker.jcg.annotation</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="addSetters" class="de.steinacker.jcg.transform.type.AddSetters"/>
+
+    <bean id="finalizeFields" class="de.steinacker.jcg.transform.type.FinalizeFields"/>
+
+    <bean id="mutable" class="de.steinacker.jcg.transform.type.TypeTransformerChain">
+        <property name="name" value="Mutable"/>
+        <property name="transformerChain">
+            <list>
+                <ref bean="removeSingleEmptyDefaultConstructor" />
+                <ref bean="typeTranslator" />
+                <ref bean="publicFinalClass" />
+                <ref bean="privatizeFields" />
+                <ref bean="addConstructors" />
+                <ref bean="addGetters" />
+                <ref bean="addGeneratedAnnotation" />
+                <ref bean="removeJcgAnnotations" />
+                <ref bean="addSetters" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="immutable" class="de.steinacker.jcg.transform.type.TypeTransformerChain">
+        <property name="name" value="Immutable"/>
+        <property name="transformerChain">
+            <list>
+                <ref bean="removeSingleEmptyDefaultConstructor" />
+                <ref bean="typeTranslator" />
+                <ref bean="publicFinalClass" />
+                <ref bean="privatizeFields" />
+                <ref bean="finalizeFields" />
+                <ref bean="addConstructors" />
+                <ref bean="addGetters" />
+                <ref bean="addGeneratedAnnotation" />
+                <ref bean="removeJcgAnnotations" />
+            </list>
+        </property>
+    </bean>
+
+</beans>

@@ -6,6 +6,7 @@ package de.steinacker.jcg.transform.type;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -19,18 +20,18 @@ import java.util.List;
  * @author Guido Steinacker
  * @version %version: 28 %
  */
-public final class TypeTransformerChain implements TypeTransformer, ApplicationContextAware {
+public final class TypeTransformerChain implements TypeTransformer {
     private static final Logger LOG = Logger.getLogger(TypeTransformerChain.class);
 
     private String name;
-    private List<String> chain;
-    private transient volatile ApplicationContext context;
+    private List<TypeTransformer> chain;
 
-
-    public void setTransformers(final List<String> transformers) {
-        chain = new ArrayList<String>(transformers);
+    @Required
+    public void setTransformerChain(final List<TypeTransformer> transformerChain) {
+        chain = transformerChain;
     }
 
+    @Required
     public void setName(final String name) {
         this.name = name;
     }
@@ -42,10 +43,8 @@ public final class TypeTransformerChain implements TypeTransformer, ApplicationC
     @Override
     public TypeMessage transform(final TypeMessage inputMessage) {
         TypeMessage msg = inputMessage;
-        TypeTransformerProvider provider = context.getBean(TypeTransformerProvider.class);
-        for (final String key : chain) {
-            final TypeTransformer transformer = provider.getTransformer(key);
-            LOG.info("Applying " + transformer.getName());
+        for (final TypeTransformer transformer : chain) {
+            LOG.info("Applying " + transformer.toString());
             msg = transformer.transform(msg);
         }
         return msg;
@@ -60,8 +59,4 @@ public final class TypeTransformerChain implements TypeTransformer, ApplicationC
         return sb.toString();
     }
 
-    @Override
-    public void setApplicationContext(final ApplicationContext applicationContext) throws BeansException {
-        this.context = applicationContext;
-    }
 }

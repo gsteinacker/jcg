@@ -18,8 +18,8 @@ import javax.validation.constraints.Pattern;
 public class MutablePerson {
 
     //@Property
-    public String firstName;
-
+    public final String firstName;
+    { firstName = null; }
     //@Property    
     public String lastName;
 

@@ -7,12 +7,11 @@ Release 0.1: Basics
              Release 0.1 will be the foundation of the project: a Java parser, usable to parse most
              kinds of Java code; a simple domain model, that is intended to be an abstraction for
              (primarily Java) sources with a focus on code transformation and generation; and a
-             code-generating facility to generate code.
+             basic code-generating facility to generate code.
 ---------------------------------------------------------------------------------------------------
 ID      Prio    Description
 ---------------------------------------------------------------------------------------------------
 11        1     Implement generic types.
-13        2     Remove unused code and debugging output (especially to System.out)
 15        1     Implement support for arrays in fields and parameters.
 16        1     Implement generation of useful comments, including descriptions from the glossary.
 21        2     Parsing + generation of interfaces
@@ -82,6 +81,7 @@ ID      Prio    Description
                 transformer configuration.
 85        2     Provide a build.xml to build the sources.
 86        2     Ant integration with examples on how to transform code using Ant.
+13        2     Remove unused code and debugging output (especially to System.out)
 
 ---------------------------------------------------------------------------------------------------
 Release 0.5: Support manual changes of generated code
@@ -97,7 +97,7 @@ ID      Prio    Description
 ---------------------------------------------------------------------------------------------------
           5     Eclipse integration (Generate a folder, a package or a single class)
           5     IntelliJ IDEA integration (Generate a folder, a package or a single class)
-          5     ANT Integration
+          5     ANT integration
 
 ---------------------------------------------------------------------------------------------------
 Unspecified:

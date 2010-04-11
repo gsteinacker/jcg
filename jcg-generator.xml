@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="generator" class="de.steinacker.jcg.generator.GeneratorChain">
+        <constructor-arg>
+            <list>
+                <bean class="de.steinacker.jcg.generator.ConsoleGenerator">
+                    <property name="serializer">
+                        <bean class="de.steinacker.jcg.generator.VelocityTypeSerializer">
+                            <constructor-arg value="/templates/type/class.vm"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="de.steinacker.jcg.generator.FileGenerator">
+                    <property name="serializer">
+                        <bean class="de.steinacker.jcg.generator.VelocityTypeSerializer">
+                            <constructor-arg value="/templates/type/class.vm"/>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+</beans>

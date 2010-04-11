@@ -9,117 +9,34 @@
        xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
-    <bean id="glossaryFactory" class="de.steinacker.jcg.transform.translation.JaxbGlossaryFactory"/>
-
-    <bean id="glossary" factory-bean="glossaryFactory" factory-method="glossary"/>
-
-    <bean id="parser" class="de.steinacker.jcg.parse.JavaFileParser" />
-
-    <bean id="transformerProvider" class="de.steinacker.jcg.transform.type.TypeTransformerProvider">
-      <property name="transformers">
-        <list>
-          <bean class="de.steinacker.jcg.transform.translation.TypeTranslator">
-              <constructor-arg ref="glossary"/>
-          </bean>
-          <bean class="de.steinacker.jcg.transform.type.RemoveSingleEmptyDefaultConstructor"/>
-          <bean class="de.steinacker.jcg.transform.type.PublicFinalClass"/>
-          <bean class="de.steinacker.jcg.transform.type.PrivatizeFields"/>
-          <bean class="de.steinacker.jcg.transform.type.AddConstructors">
-              <property name="name" value="AddConstructorsForMutable" />
-              <property name="onlyFinalFields" value="false" />
-              <property name="generateDefaultConstructor" value="true" />
-          </bean>
-          <bean class="de.steinacker.jcg.transform.type.AddConstructors">
-              <property name="name" value="AddConstructorsForImmutable" />
-              <property name="onlyFinalFields" value="false" />
-              <property name="finalAndNonFinalFields" value="true" />
-              <property name="generateDefaultConstructor" value="true" />
-          </bean>
-          <bean class="de.steinacker.jcg.transform.type.AddGetters"/>
-          <bean class="de.steinacker.jcg.transform.type.AddGeneratedAnnotation"/>
-          <bean class="de.steinacker.jcg.transform.type.RemoveJcgAnnotations"/>
-          <bean class="de.steinacker.jcg.transform.type.AddSetters"/>
-          <bean class="de.steinacker.jcg.transform.type.FinalizeFields"/>
-          <bean class="de.steinacker.jcg.transform.type.TypeTransformerChain">
-            <property name="name" value="Mutable" />
-            <property name="transformers">
-              <list>
-                  <value>RemoveSingleEmptyDefaultConstructor</value>
-                  <value>TypeTranslator</value>
-                  <value>PublicFinalClass</value>
-                  <value>PrivatizeFields</value>
-                  <value>AddConstructorsForMutable</value>
-                  <value>AddGetters</value>
-                  <value>AddGeneratedAnnotation</value>
-                  <!--<value>removeJcgAnnotations</value>-->
-                  <value>AddSetters</value>
-              </list>
-            </property>
-          </bean>
-          <bean class="de.steinacker.jcg.transform.type.TypeTransformerChain">
-            <property name="name" value="Immutable" />
-            <property name="transformers">
-              <list>
-                  <value>RemoveSingleEmptyDefaultConstructor</value>
-                  <value>TypeTranslator</value>
-                  <value>PublicFinalClass</value>
-                  <value>PrivatizeFields</value>
-                  <value>FinalizeFields</value>
-                  <value>AddConstructorsForImmutable</value>
-                  <value>AddGetters</value>
-                  <value>AddGeneratedAnnotation</value>
-                  <!--<value>removeJcgAnnotations</value>-->
-              </list>
-            </property>
-          </bean>
-        </list>
-      </property>
-    </bean>
+    <import resource="jcg-transformers.xml"/>
+    <import resource="jcg-generator.xml" />
+    
+    <bean id="parser" class="de.steinacker.jcg.parse.JavaFileParser"/>
 
     <bean id="transformations" class="de.steinacker.jcg.transform.type.TypeTransformerRouter">
-      <property name="selector">
-        <bean class="de.steinacker.jcg.transform.rule.TransformerSelectors">
-          <property name="rules">
-            <list>
-              <bean class="de.steinacker.jcg.transform.rule.AnnotationSelector">
-                <property name="annotationNames">
-                  <list>
-                    <value>de.steinacker.jcg.annotation.Mutable</value>
-                    <value>de.steinacker.jcg.annotation.Immutable</value>
-                    <value>de.steinacker.jcg.annotation.TransformWith</value>
-                  </list>
-                </property>
-              </bean>
-              <bean class="de.steinacker.jcg.transform.rule.ContextParamSelector">
-                <property name="ctxParam" value="ctx-selector-param"/>
-              </bean>
-            </list>
-          </property>
-        </bean>
-      </property>
-      <property name="name" value="TypeTransformerRouter"/>
-      <property name="transformerProvider" ref="transformerProvider"/>
-    </bean>
-
-    <bean id="generator" class="de.steinacker.jcg.generator.GeneratorChain">
-        <constructor-arg>
-            <list>
-                <bean class="de.steinacker.jcg.generator.ConsoleGenerator">
-                    <property name="serializer">
-                        <bean class="de.steinacker.jcg.generator.VelocityTypeSerializer">
-                            <constructor-arg value="/templates/type/class.vm"/>
+        <property name="selector">
+            <bean class="de.steinacker.jcg.transform.rule.TransformerSelectors">
+                <property name="rules">
+                    <list>
+                        <bean class="de.steinacker.jcg.transform.rule.AnnotationSelector">
+                            <property name="annotationNames">
+                                <list>
+                                    <value>de.steinacker.jcg.annotation.Mutable</value>
+                                    <value>de.steinacker.jcg.annotation.Immutable</value>
+                                    <value>de.steinacker.jcg.annotation.TransformWith</value>
+                                </list>
+                            </property>
                         </bean>
-                    </property>
-                </bean>
-              <bean class="de.steinacker.jcg.generator.FileGenerator">
-                  <property name="serializer">
-                      <bean class="de.steinacker.jcg.generator.VelocityTypeSerializer">
-                          <constructor-arg value="/templates/type/class.vm"/>
-                      </bean>
-                  </property>
-              </bean>
-            </list>
-        </constructor-arg>
+                        <bean class="de.steinacker.jcg.transform.rule.ContextParamSelector">
+                            <property name="ctxParam" value="ctx-selector-param"/>
+                        </bean>
+                    </list>
+                </property>
+            </bean>
+        </property>
+        <property name="name" value="TypeTransformerRouter"/>
+        <property name="transformerProvider" ref="transformerProvider"/>
     </bean>
 
     <bean id="controller" class="de.steinacker.jcg.JcgController">

@@ -26,14 +26,14 @@ import java.util.List;
 public final class ModelSequencer implements ModelTransformer {
 
     private static final Logger LOG = Logger.getLogger(ModelSequencer.class);
-    private final TypeTransformer typeTransformer;
+    private TypeTransformer typeTransformer;
 
     /**
-     * Creates a ModelSequencer.
+     * Injects the TypeTransformer used to transform the types of the model.
      *
      * @param typeTransformer The TypeTransformer used to transform the TypeMessages.
      */
-    public ModelSequencer(final TypeTransformer typeTransformer) {
+    public void setTypeTransformer(final TypeTransformer typeTransformer) {
         this.typeTransformer = typeTransformer;
     }
 

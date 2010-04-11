@@ -48,7 +48,9 @@ public final class TypeTranslator implements TypeTransformer {
         }
 
         // Translate the parent type:
-        typeBuilder.setNameOfSuperClass(translateQualifiedName(type.getNameOfSuperClass()));
+        final QualifiedName superClass = type.getNameOfSuperClass();
+        if (superClass != null)
+            typeBuilder.setNameOfSuperClass(translateQualifiedName(superClass));
 
         // Translate the interfaces:
         typeBuilder.setNameOfInterfaces(new ArrayList<QualifiedName>());

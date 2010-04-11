@@ -15,9 +15,12 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.ResourceNotFoundException;
+import org.springframework.beans.factory.annotation.Required;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -29,17 +32,27 @@ final class VelocityTypeSerializer implements TypeSerializer {
     private static final Logger logger = Logger.getLogger(VelocityTypeSerializer.class);
 
     public final VelocityEngine ve = new VelocityEngine();
-    public final String template;
+    public Set<String> templates;
+    public TemplateSelector templateSelector;
 
-    VelocityTypeSerializer(final String template) {
+    VelocityTypeSerializer() {
         try {
             ve.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
             ve.init();
-            this.template = template;
         } catch (final Exception e) {
             logger.error(e.getMessage(), e);
             throw new IllegalStateException("Exception while initializing Velocity: " + e.getMessage(), e);
         }
+    }
+
+    @Required
+    public void setTemplates(final Set<String> templates) {
+        this.templates = templates;
+    }
+
+    @Required
+    public void setTemplateSelector(final TemplateSelector templateSelector) {
+        this.templateSelector = templateSelector;
     }
 
     @Override
@@ -56,7 +69,7 @@ final class VelocityTypeSerializer implements TypeSerializer {
         vc.put("codeUtil", new CodeUtil());
         vc.put("dateUtil", new DateUtil());
         try {
-            final Template velocityTemplate = ve.getTemplate(template);
+            final Template velocityTemplate = ve.getTemplate(templateSelector.select(type));
             velocityTemplate.merge(vc, writer);
         } catch (final ResourceNotFoundException e) {
             logger.error(e.getMessage(), e);

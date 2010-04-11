@@ -17,6 +17,7 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner6;
 import javax.lang.model.util.Elements;
@@ -132,7 +133,10 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         typeBuilder.setComment("");
 
         // parent class:
-        typeBuilder.setNameOfSuperClass(QualifiedName.valueOf(e.getSuperclass().toString()));
+        if (e.getSuperclass() instanceof NoType)
+            typeBuilder.setNameOfSuperClass(null);
+        else
+            typeBuilder.setNameOfSuperClass(QualifiedName.valueOf(e.getSuperclass().toString()));
 
         // interfaces:
         final List<QualifiedName> interfaces = new ArrayList<QualifiedName>(e.getInterfaces().size());
@@ -175,11 +179,17 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         //final SourcePositions sourcePosition = trees.getSourcePositions();
         //final CompilationUnitTree compilationUnit = treePath.getCompilationUnit();
         //System.out.println("SourcePosition" + sourcePosition.getStartPosition(compilationUnit, tree));
+        final boolean isInterfaceMethod = e.getEnclosingElement().getKind().equals(ElementKind.INTERFACE);
         final Tree tree = treePath.getLeaf();
         final JCTree.JCMethodDecl jcTree = (JCTree.JCMethodDecl)tree;
-        final String b = jcTree.getBody().toString();
-        final String methodBody = b.substring(b.indexOf('{')+1, b.lastIndexOf('}')).trim();
-        
+        final JCTree.JCBlock block = jcTree.getBody();
+        final String methodBody;
+        if (block != null) {
+            final String b = block.toString();
+            methodBody = b.substring(b.indexOf('{')+1, b.lastIndexOf('}')).trim();
+        } else {
+            methodBody = null;
+        }
         final String s = e.toString();
         final SimpleName methodName = SimpleName.valueOf(s.substring(0, s.indexOf('(')));
         final QualifiedName returnType;
@@ -206,7 +216,7 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
             parameters.add(param);
         }
         // TODO: e.getTypeParameters();
-        final EnumSet<MethodModifier> modifiers = mapToMethodModifiers(e);
+        final EnumSet<MethodModifier> modifiers = mapToMethodModifiers(e, isInterfaceMethod);
         final Method method = new MethodBuilder()
                 .setName(methodName)
                 .setAnnotations(annotations)
@@ -526,11 +536,13 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         return annotationValues;
     }
 
-    private EnumSet<MethodModifier> mapToMethodModifiers(ExecutableElement e) {
+    private EnumSet<MethodModifier> mapToMethodModifiers(final ExecutableElement e, final boolean isInterfaceMethod) {
         final EnumSet<MethodModifier> modifiers = EnumSet.noneOf(MethodModifier.class);
         for (final Modifier modifier : e.getModifiers()) {
             modifiers.add(MethodModifier.valueOf(modifier.name()));
         }
+        if (isInterfaceMethod)
+            modifiers.remove(MethodModifier.ABSTRACT);
         return modifiers;
     }
 

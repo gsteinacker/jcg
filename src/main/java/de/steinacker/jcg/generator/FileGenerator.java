@@ -57,7 +57,6 @@ public final class FileGenerator implements Generator {
                         //ignore
                     }
             }
-            serializer.serializeType(type);
         }
     }
 

@@ -51,6 +51,23 @@
         <shortDescription>Eine Preisinformation.</shortDescription>
         <longDescription>Laaaaaange Beschreibung, was ein Preis ist.</longDescription>
     </entry>
+    <entry>
+        <term>Vorname</term>
+        <pluralTerm>Vornamen</pluralTerm>
+        <translation>first name</translation>
+        <pluralTranslation>first names</pluralTranslation>
+        <shortDescription>Der Vorname einer Person.</shortDescription>
+        <longDescription>Der Vorname einer Person. Für Personen mit mehreren Vornamen kann der
+        Vorname mehrere Namen enthalten.</longDescription>
+    </entry>
+    <entry>
+        <term>Nachname</term>
+        <pluralTerm>Nachnamen</pluralTerm>
+        <translation>surname</translation>
+        <pluralTranslation>surnames</pluralTranslation>
+        <shortDescription>Der Nachname einer Person.</shortDescription>
+        <longDescription>Der Nachname einer Person.</longDescription>
+    </entry>
     <!-- copy+paste this to create a new glossary entry:
     <entry>
         <term></term>

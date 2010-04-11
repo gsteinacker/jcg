@@ -208,8 +208,12 @@ public final class Type implements Annotatable {
      */
     public List<QualifiedName> getImports() {
         final Set<QualifiedName> allImports = new HashSet<QualifiedName>();
+        
         // Die Oberklasse:
-        allImports.add(getNameOfSuperClass());
+        final QualifiedName superClass = getNameOfSuperClass();
+        if (superClass != null)
+            allImports.add(superClass);
+
         // Alle implementierten Interfaces:
         for (final QualifiedName nameOfInterface : nameOfInterfaces) {
             allImports.add(nameOfInterface);

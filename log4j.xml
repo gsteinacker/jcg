@@ -8,7 +8,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
     <appender name="file" class="org.apache.log4j.FileAppender">
-        <param name="file" value="jcg.log"/>
+        <param name="file" value="logs/jcg.log"/>
         <param name="Append" value="true"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c: %m%n"/>
@@ -16,7 +16,7 @@
     </appender>
 
     <appender name="parse" class="org.apache.log4j.FileAppender">
-        <param name="file" value="jcg-parse.log"/>
+        <param name="file" value="logs/jcg-parse.log"/>
         <param name="Append" value="true"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c: %m%n"/>
@@ -24,7 +24,7 @@
     </appender>
 
     <appender name="transform" class="org.apache.log4j.FileAppender">
-        <param name="file" value="jcg-transform.log"/>
+        <param name="file" value="logs/jcg-transform.log"/>
         <param name="Append" value="true"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c: %m%n"/>
@@ -32,7 +32,7 @@
     </appender>
 
     <appender name="generator" class="org.apache.log4j.FileAppender">
-        <param name="file" value="jcg-generate.log"/>
+        <param name="file" value="logs/jcg-generate.log"/>
         <param name="Append" value="true"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ISO8601} %-5p [%t] %c: %m%n"/>

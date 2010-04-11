@@ -14,10 +14,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * A ModelTransformer which makes all fields 'final'.
+ * A TypeTransformer which makes all fields 'final'.
  * <p/>
- * This Transformer optionally supports predicates to decide, whether a type or a field
- * will be transformed or not.
  *
  * @author Guido Steinacker
  * @version %version: 28 %

@@ -12,10 +12,8 @@ import de.steinacker.jcg.util.NameUtil;
 import org.apache.log4j.Logger;
 
 /**
- * A ModelTransformer which adds getter methods for all non-static attributes of the different types.
+ * A TypeTransformer which adds getter methods for all non-static attributes of the different types.
  * <p/>
- * This Transformer optionally supports predicates to decide, whether a type or a field
- * shall become a getter.
  *
  * @author Guido Steinacker
  * @version %version: 28 %

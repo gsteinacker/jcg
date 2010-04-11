@@ -12,10 +12,8 @@ import de.steinacker.jcg.util.NameUtil;
 import org.apache.log4j.Logger;
 
 /**
- * A ModelTransformer which adds setter methods for all attributes of the different types.
+ * A TypeTransformer which adds setter methods for all attributes of the different types.
  * <p/>
- * This Transformer optionally supports predicates to decide, whether a type or a field
- * shall become a setter.
  *
  * @author Guido Steinacker
  * @version %version: 28 %

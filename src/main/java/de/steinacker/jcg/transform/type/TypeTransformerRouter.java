@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Required;
 import java.util.List;
 
 /**
- * Routes TypeMessages to one of several possible TypeTransformers using a Rule implementation to
- * select a transformer.
+ * Routes TypeMessages to one of several possible TypeTransformers.
+ * The TypeTransformer is selected by a {@link TypeTransformerSelector}
  *
  * @author Guido Steinacker
  * @version %version: 28 %

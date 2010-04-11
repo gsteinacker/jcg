@@ -79,7 +79,6 @@ ID      Prio    Description
 84        3     Simplify the configuration of the transformers. Separate the transformer
                 configuration from the rest of the config, provide a facility to extend the
                 transformer configuration.
-85        2     Provide a build.xml to build the sources.
 86        2     Ant integration with examples on how to transform code using Ant.
 13        2     Remove unused code and debugging output (especially to System.out)
 
@@ -97,7 +96,6 @@ ID      Prio    Description
 ---------------------------------------------------------------------------------------------------
           5     Eclipse integration (Generate a folder, a package or a single class)
           5     IntelliJ IDEA integration (Generate a folder, a package or a single class)
-          5     ANT integration
 
 ---------------------------------------------------------------------------------------------------
 Unspecified:

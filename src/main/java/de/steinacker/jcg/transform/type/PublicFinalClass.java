@@ -11,10 +11,8 @@ import org.apache.log4j.Logger;
 import static de.steinacker.jcg.model.TypeModifier.*;
 
 /**
- * A ModelTransformer which makes a type 'public final'.
+ * A TypeTransformer which makes a type 'public final'.
  * <p/>
- * This Transformer optionally supports predicates to decide, whether a type
- * will be transformed or not.
  *
  * @author Guido Steinacker
  * @version %version: 28 %

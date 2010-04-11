@@ -8,6 +8,8 @@ import de.steinacker.jcg.model.*;
 import de.steinacker.jcg.util.DefaultFormatStringProvider;
 import de.steinacker.jcg.util.FormatStringProvider;
 import de.steinacker.jcg.util.TransformerUtil;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -205,7 +207,13 @@ public final class AddConstructors implements TypeTransformer {
 
     @Override
     public String toString() {
-        return name;
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).
+                append("name", name).
+                append("generateDefaultConstructor", generateDefaultConstructor).
+                append("onlyFinalFields", onlyFinalFields).
+                append("finalAndNonFinalFields", finalAndNonFinalFields).
+                append("formatStringProvider", formatStringProvider).
+                toString();
     }
 
 }

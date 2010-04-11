@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "http://beust.com/testng/testng-1.0.dtd" >
+  
+<suite name="jcg" verbose="1">
+  
+  <test name="All Tests" parallel="true" thread-count="2" >
+    <packages>
+      <package name="de.steinacker.jcg.*" />
+    </packages>
+  </test>
+  
+</suite>

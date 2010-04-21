@@ -87,6 +87,6 @@ final class JcgParameters {
     }
 
     public void setBinDir(final String binDir) {
-        this.binDir = this.binDir;
+        this.binDir = binDir;
     }
 }

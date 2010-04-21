@@ -14,7 +14,6 @@ ID      Prio    Description
 11        1     Implement generic types.
 15        1     Implement support for arrays in fields and parameters.
 16        1     Implement generation of useful comments, including descriptions from the glossary.
-21        2     Parsing + generation of interface types
 22        2     Parsing + generation of enum types
 23        4     Parsing + generation of annotation types
 24        2     Parsing, transformation + generation of thrown exceptions (=> methods)

@@ -45,10 +45,14 @@ public final class QualifiedName implements CharSequence, Comparable<QualifiedNa
     public static QualifiedName valueOf(final CharSequence qualifiedName) {
         if (qualifiedName == null)
             throw new NullPointerException("Parameter must not be null!");
-        if (!INSTANCES.containsKey(qualifiedName)) {
-            INSTANCES.put(qualifiedName, new QualifiedName(qualifiedName));
+        final String key = qualifiedName.toString();
+        if (!INSTANCES.containsKey(key)) {
+            if (qualifiedName instanceof QualifiedName)
+                INSTANCES.put(key, (QualifiedName)qualifiedName);
+            else
+                INSTANCES.put(key, new QualifiedName(qualifiedName));
         }
-        return INSTANCES.get(qualifiedName);
+        return INSTANCES.get(key);
     }
 
     public static QualifiedName valueOf(final CharSequence packageName, final CharSequence simpleName) {

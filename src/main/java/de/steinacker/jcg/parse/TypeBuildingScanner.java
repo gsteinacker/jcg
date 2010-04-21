@@ -105,6 +105,9 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         // class name:
         typeBuilder.setName(QualifiedName.valueOf(e.getQualifiedName()));
 
+        // modifiers:
+        final EnumSet<TypeModifier> typeModifiers = mapToTypeModifiers(e.getModifiers());
+
         // class or interface?
         switch (e.getKind()) {
             case ANNOTATION_TYPE:
@@ -118,11 +121,13 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
                 break;*/
             case INTERFACE:
                 typeBuilder.setKind(Type.Kind.INTERFACE);
+                typeModifiers.remove(TypeModifier.ABSTRACT);
+                typeModifiers.remove(TypeModifier.FINAL);
                 break;
         }
 
-        // modifiers:
-        typeBuilder.setModifiers(mapToTypeModifiers(e.getModifiers()));
+        // set modifiers:
+        typeBuilder.setModifiers(typeModifiers);
 
         // annotations:
         List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());

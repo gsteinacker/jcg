@@ -114,46 +114,50 @@ public final class AddConstructors implements TypeTransformer {
     @Override
     public TypeMessage transform(final TypeMessage message) {
         final Type type = message.getPayload();
-        final List<Field> allNonStaticFields = new ArrayList<Field>();
-        final List<Field> nonFinalFields = new ArrayList<Field>();
-        final List<Field> finalFields = new ArrayList<Field>();
-        for (final Field field : type.getFields()) {
-            if (!field.is(FieldModifier.STATIC)) {
-                allNonStaticFields.add(field);
-                if (field.is(FieldModifier.FINAL))
-                    finalFields.add(field);
-                else
-                    nonFinalFields.add(field);
+        if (type.getKind().equals(Type.Kind.CLASS)) {
+            final List<Field> allNonStaticFields = new ArrayList<Field>();
+            final List<Field> nonFinalFields = new ArrayList<Field>();
+            final List<Field> finalFields = new ArrayList<Field>();
+            for (final Field field : type.getFields()) {
+                if (!field.is(FieldModifier.STATIC)) {
+                    allNonStaticFields.add(field);
+                    if (field.is(FieldModifier.FINAL))
+                        finalFields.add(field);
+                    else
+                        nonFinalFields.add(field);
+                }
             }
-        }
-        final TypeBuilder typeBuilder = new TypeBuilder(type);
-        if (finalAndNonFinalFields) {
-            // generate a constructor with all non-static fields, one with all final fields, and
-            // optionally a default constructors if there are no final fields an generateDefaultConstructor
-            // is true
-            if (allNonStaticFields.size() > 0) {
+            final TypeBuilder typeBuilder = new TypeBuilder(type);
+            if (finalAndNonFinalFields) {
+                // generate a constructor with all non-static fields, one with all final fields, and
+                // optionally a default constructors if there are no final fields an generateDefaultConstructor
+                // is true
+                if (allNonStaticFields.size() > 0) {
+                    if (generateDefaultConstructor && allNonStaticFields.size() == nonFinalFields.size())
+                        addMissingConstructor(typeBuilder, type, Collections.<Field>emptyList());
+                    if (finalFields.size() < allNonStaticFields.size())
+                        addMissingConstructor(typeBuilder, type, finalFields);
+                    addMissingConstructor(typeBuilder, type, allNonStaticFields);
+                } else {
+                    if (generateDefaultConstructor)
+                        addMissingConstructor(typeBuilder, type, Collections.<Field>emptyList());
+                }
+            } else if (onlyFinalFields) {
+                // generate a constructor for the final fields and optionally add a default constructor,
+                // if there are no final fields:
                 if (generateDefaultConstructor && allNonStaticFields.size() == nonFinalFields.size())
                     addMissingConstructor(typeBuilder, type, Collections.<Field>emptyList());
-                if (finalFields.size() < allNonStaticFields.size())
-                    addMissingConstructor(typeBuilder, type, finalFields);
-                addMissingConstructor(typeBuilder, type, allNonStaticFields);
+                addMissingConstructor(typeBuilder, type, finalFields);
             } else {
-                if (generateDefaultConstructor)
+                // generate a constructor with all non-static fields:
+                if (generateDefaultConstructor && allNonStaticFields.size() == nonFinalFields.size())
                     addMissingConstructor(typeBuilder, type, Collections.<Field>emptyList());
+                addMissingConstructor(typeBuilder, type, allNonStaticFields);
             }
-        } else if (onlyFinalFields) {
-            // generate a constructor for the final fields and optionally add a default constructor,
-            // if there are no final fields:
-            if (generateDefaultConstructor && allNonStaticFields.size() == nonFinalFields.size())
-                addMissingConstructor(typeBuilder, type, Collections.<Field>emptyList());
-            addMissingConstructor(typeBuilder, type, finalFields);
+            return new TypeMessage(typeBuilder.toType(), message.getContext());
         } else {
-            // generate a constructor with all non-static fields:
-            if (generateDefaultConstructor && allNonStaticFields.size() == nonFinalFields.size())
-                addMissingConstructor(typeBuilder, type, Collections.<Field>emptyList());
-            addMissingConstructor(typeBuilder, type, allNonStaticFields);
+            return message;
         }
-        return new TypeMessage(typeBuilder.toType(), message.getContext());
     }
 
     private void addMissingConstructor(final TypeBuilder typeBuilder, final Type type, final List<Field> fields) {

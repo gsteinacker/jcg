@@ -4,6 +4,9 @@
 
 package de.steinacker.jcg.util;
 
+import de.steinacker.jcg.model.QualifiedName;
+import de.steinacker.jcg.model.Type;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +24,34 @@ public final class CodeUtil {
 
     public static CharSequence fileComment() {
         return toBlockComment(FILE_COMMENT, COMMENT_LINE_WIDTH);
+    }
+
+    public static String printExtends(final Type type) {
+        if (type.getKind() == Type.Kind.CLASS
+                && !type.getNameOfSuperClass().equals(QualifiedName.valueOf("java.lang.Object"))) {
+            return new StringBuilder("extends ")
+                    .append(type.getNameOfSuperClass().getSimpleName())
+                    .toString();
+        } else {
+            return "";
+        }
+    }
+
+    public static String printImplements(final Type type) {
+        final StringBuilder sb = new StringBuilder();
+        final List<QualifiedName> interfaces = type.getNameOfInterfaces();
+        if (interfaces.size() > 0) {
+            if (type.getKind() == Type.Kind.INTERFACE)
+                sb.append("extends");
+            else
+                sb.append("implements");
+            sb.append(" ").append(interfaces.get(0).getSimpleName());
+            if (interfaces.size() > 1) {
+                for (int i=1,n=interfaces.size(); i<n; ++i)
+                    sb.append(", ").append(interfaces.get(i).getSimpleName());
+            }
+        }
+        return sb.toString();
     }
 
     public static CharSequence toJavaDocComment(final String text, final int lineWidth) {
@@ -46,20 +77,24 @@ public final class CodeUtil {
     }
 
     public static CharSequence indent(final String text, final int steps) {
-        final String s = text.replaceAll("\r", "");
-        final String[] lines = s.split("\n");
-        final StringBuilder sb = new StringBuilder();
-        boolean firstLine = true;
-        for (final String line : lines) {
-            if (!firstLine)
-                sb.append("\n");
-            else
-                firstLine = false;
-            for (int i=0, len=steps * TAB_WIDTH; i<len; ++i)
-                sb.append(' ');
-            sb.append(line);
+        if (text != null) {
+            final String s = text.replaceAll("\r", "");
+            final String[] lines = s.split("\n");
+            final StringBuilder sb = new StringBuilder();
+            boolean firstLine = true;
+            for (final String line : lines) {
+                if (!firstLine)
+                    sb.append("\n");
+                else
+                    firstLine = false;
+                for (int i=0, len=steps * TAB_WIDTH; i<len; ++i)
+                    sb.append(' ');
+                sb.append(line);
+            }
+            return sb;
+        } else {
+            return "";
         }
-        return sb;
     }
 
     /**

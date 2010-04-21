@@ -9,7 +9,7 @@ $codeUtil.toJavaDocComment($type.comment, 80)
 #foreach($annotation in $type.annotations)
 $annotation
 #end
-$type.toString() {
+$type.toString() $codeUtil.printImplements($type) {
 
 #foreach( $attribute in $type.fields )
 #foreach($annotation in $attribute.annotations)

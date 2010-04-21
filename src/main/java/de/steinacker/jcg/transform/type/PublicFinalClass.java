@@ -29,7 +29,7 @@ public final class PublicFinalClass implements TypeTransformer {
     @Override
     public TypeMessage transform(final TypeMessage message) {
         final Type type = message.getPayload();
-        if (type.is(ABSTRACT) || (type.is(FINAL) && type.is(PUBLIC))) {
+        if (type.is(ABSTRACT) || type.getKind() != Type.Kind.CLASS || (type.is(FINAL) && type.is(PUBLIC))) {
             return message;
         } else {
             final Type finalizedType = new TypeBuilder(type)

@@ -5,6 +5,7 @@
 package de.steinacker.jcg.util;
 
 import javax.validation.constraints.Pattern;
+import java.util.*;
 
 /**
  * @author Guido Steinacker
@@ -86,4 +87,34 @@ public final class NameUtil {
                     .append(name.subSequence(1, name.length()));
         }
     }
+
+    /** "AAA" => {"AAA"}
+     *  "aaa" => {"aaa"}
+     *  "AaAa" => {"Aa", "Aa"}
+     *  "AAAa" => {"AA", "Aa"}
+     */
+    public static String[] splitCamelHumpName(final String name) {
+        final List<String> strings = new LinkedList<String>();
+        final char[] chars = name.toCharArray();
+        StringBuilder sb = new StringBuilder();
+        for (int i=0,n=chars.length; i<n; ++i) {
+            final char c = chars[i];
+            if (Character.isUpperCase(c)) {
+                strings.add(sb.toString());
+                sb = new StringBuilder().append(c);
+            } else {
+                sb.append(c);
+            }
+        }
+        strings.add(sb.toString());
+        final Iterator<String> iter = strings.iterator();
+        while (iter.hasNext()) {
+            final String s = iter.next();
+            if (s.isEmpty())
+                iter.remove();
+        }
+        // TODO: "K", "F", "Z" wieder zusammenfassen!
+        return strings.toArray(new String[strings.size()]);
+    }
+
 }

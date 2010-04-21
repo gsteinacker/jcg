@@ -18,7 +18,7 @@ import javax.validation.constraints.Size;
 public class AnnotationExample {
 
     @Valid
-    Artikel validArticle;
+    Artikel isValidItem;
 
     @NotNull (message="foo", groups=String.class)
     Artikel articleWithStringAndTypeParams;
@@ -33,11 +33,11 @@ public class AnnotationExample {
     int intWithNestedAnnotations;
 
     @Valid
-    void addAnotherArticle(Artikel a) {
+    void addAnotherArtikel(Artikel a) {
     }
 
     @Valid
-    Artikel getSomeArticle(String foo) {
+    Artikel getSomeArtikel(String foo) {
         return new Artikel();
     }
 }

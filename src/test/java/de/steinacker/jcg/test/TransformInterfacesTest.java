@@ -1,35 +1,32 @@
 /**
  * Copyright (c) 2010 by Guido Steinacker
  */
-package de.steinacker.jcg.parse;
+package de.steinacker.jcg.test;
 
 import de.steinacker.jcg.model.*;
-import de.steinacker.jcg.test.AbstractJcgTest;
-import org.apache.log4j.xml.DOMConfigurator;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import static de.steinacker.jcg.test.TypeAssert.assertHasMethod;
 import static org.testng.Assert.*;
 
 
-public class ParseInterfacesTest extends AbstractJcgTest {
+public class TransformInterfacesTest extends AbstractJcgTest {
 
     @Test
     public void testModel() {
-        assertNotNull(getParsedModel().getType(QualifiedName.valueOf("test.interfaces.Kunde")));
-        assertNotNull(getParsedModel().getType(QualifiedName.valueOf("test.interfaces.Person")));
-        assertNotNull(getParsedModel().getType(QualifiedName.valueOf("test.interfaces.MutablePerson")));
+        final Model model = getTransformedModel();
+        assertNotNull(model.getType(QualifiedName.valueOf("test.interfaces.Customer")));
+        assertNotNull(model.getType(QualifiedName.valueOf("test.interfaces.Person")));
+        assertNotNull(model.getType(QualifiedName.valueOf("test.interfaces.MutablePerson")));
     }
 
     @Test
     public void testKunde() {
-        final Type customer = getParsedModel().getType(QualifiedName.valueOf("test.interfaces.Kunde"));
+        final Model model = getTransformedModel();
+        final Type customer = model.getType(QualifiedName.valueOf("test.interfaces.Customer"));
         assertTrue(customer.getKind().equals(Type.Kind.INTERFACE));
-        assertHasMethod(customer, "public long getKundennummer()");
+        assertHasMethod(customer, "public long getCustomerNumber()");
         assertEquals(customer.getMethods().size(), 1);
         assertTrue(customer.getNameOfInterfaces().contains(QualifiedName.valueOf("test.interfaces.Person")));
         assertEquals(customer.getNameOfSuperClass(), null);

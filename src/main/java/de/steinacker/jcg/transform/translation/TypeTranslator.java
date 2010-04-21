@@ -11,7 +11,9 @@ import de.steinacker.jcg.util.NameUtil;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Translates types from one language into another language, using a Glossary.
@@ -22,6 +24,14 @@ import java.util.List;
 public final class TypeTranslator implements TypeTransformer {
 
     private static final Logger LOG = Logger.getLogger(TypeTranslator.class);
+
+    /** A list of possible prefixes of method names, where the remaining part of the
+     * method name may be translatable.
+     * TODO: make list configurable!
+     */
+    private static final List<String> translatableNamePrefixes = Arrays.asList(
+            "is", "has", "set", "get", "add", "remove", "put"
+    );
 
     private final Glossary glossary;
 
@@ -59,20 +69,25 @@ public final class TypeTranslator implements TypeTransformer {
             typeBuilder.addNameOfInterface(translateQualifiedName(interfaceName));
         }
 
-        // Translate method types
+        // Translate methods
         typeBuilder.setMethods(new ArrayList<Method>());
         for (final Method method : type.getMethods()) {
             typeBuilder.addMethod(transform(method));
         }
+
         return new TypeMessage(typeBuilder.toType(), message.getContext());
     }
 
     private Method transform(final Method method) {
         final MethodBuilder mb = new MethodBuilder(method);
-        if (method.isConstructor())
+        final SimpleName methodName = method.getName();
+        if (method.isConstructor()) {
             mb.setReturnTypeName(null);
-        else
+            mb.setName(translateSimpleName(methodName));
+        } else {
             mb.setReturnTypeName(translateQualifiedName(method.getReturnTypeName()));
+            mb.setName(translateCamelHumpName(methodName));
+        }
         mb.setParameters(new ArrayList<Parameter>());
         for (final Parameter parameter : method.getParameters()) {
             mb.addParameter(new ParameterBuilder()
@@ -97,19 +112,40 @@ public final class TypeTranslator implements TypeTransformer {
                 .toField();
     }
 
-    private SimpleName translateSimpleName(final SimpleName sourceName) {
+    private SimpleName translateSimpleName(final CharSequence sourceName) {
         if (glossary.hasTranslation(sourceName, glossary.getSourceLanguage())) {
             final String translation = glossary.getTranslation(sourceName, glossary.getSourceLanguage());
             final boolean firstUpperCase = NameUtil.isFirstUpperCase(sourceName);
             return SimpleName.valueOf(NameUtil.toCamelHumpName(translation, firstUpperCase));
         } else {
-            return sourceName;
+            return SimpleName.valueOf(sourceName);
         }
     }
 
     private QualifiedName translateQualifiedName(final QualifiedName sourceName) {
         final SimpleName simpleName = translateSimpleName(sourceName.getSimpleName());
         return QualifiedName.valueOf(sourceName.getPackage(), simpleName);
+    }
+
+    private SimpleName translateCamelHumpName(final CharSequence name) {
+        String[] parts = null;
+        final String s = name.toString();
+        String methodPrefix = "";
+        for (final String prefix : translatableNamePrefixes) {
+            if (s.startsWith(prefix) && prefix.length() < s.length()) {
+                methodPrefix = prefix;
+                parts = NameUtil.splitCamelHumpName(s.substring(prefix.length()));
+            }
+        }
+        if (parts != null) {
+            final StringBuilder camelHumpName = new StringBuilder();
+            for (String part : parts) {
+                camelHumpName.append(translateSimpleName(part));
+            }
+            return SimpleName.valueOf(methodPrefix + NameUtil.toCamelHumpName(camelHumpName.toString(), true));
+        } else {
+            return translateSimpleName(name);
+        }
     }
 
     @Override

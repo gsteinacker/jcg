@@ -2,7 +2,7 @@
   
 <suite name="jcg" verbose="1">
   
-  <test name="All Tests" parallel="true" thread-count="2" >
+  <test name="All Tests" parallel="false" thread-count="1" >
     <packages>
       <package name="de.steinacker.jcg.*" />
     </packages>

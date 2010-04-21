@@ -27,10 +27,14 @@ public final class SimpleName implements CharSequence, Comparable<SimpleName> {
     public static SimpleName valueOf(final CharSequence name) {
         if (name == null)
             throw new NullPointerException("Parameter must not be null!");
-        if (!INSTANCES.containsKey(name)) {
-            INSTANCES.put(name, new SimpleName(name));
+        final String key = name.toString();
+        if (!INSTANCES.containsKey(key)) {
+            if (name instanceof SimpleName)
+                INSTANCES.put(key, (SimpleName)name);
+            else
+                INSTANCES.put(key, new SimpleName(name));
         }
-        return INSTANCES.get(name);
+        return INSTANCES.get(key);
     }
 
     private SimpleName(final CharSequence name) {

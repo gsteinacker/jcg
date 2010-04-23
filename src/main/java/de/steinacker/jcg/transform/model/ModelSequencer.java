@@ -47,7 +47,7 @@ public final class ModelSequencer implements ModelTransformer {
         final List<TypeMessage> transformedMessages = new ArrayList<TypeMessage>();
         for (final TypeMessage typeMessage : split(message)) {
             LOG.info("Transforming " + typeMessage.getPayload().getName());
-            transformedMessages.add(typeTransformer.transform(typeMessage));
+            transformedMessages.addAll(typeTransformer.transform(typeMessage));
         }
         return aggregate(transformedMessages);
     }
@@ -58,7 +58,7 @@ public final class ModelSequencer implements ModelTransformer {
      * @param modelMessage the ModelMessage
      * @return TypeMessage
      */
-    public List<TypeMessage> split(final ModelMessage modelMessage) {
+    private List<TypeMessage> split(final ModelMessage modelMessage) {
         final List<TypeMessage> messages = new ArrayList<TypeMessage>();
         final Context context = modelMessage.getContext();
         for (final Type type : modelMessage.getPayload().getAllTypes()) {
@@ -73,7 +73,7 @@ public final class ModelSequencer implements ModelTransformer {
      * @param typeMessages the list of TypeMessages.
      * @return ModelMessage
      */
-    public ModelMessage aggregate(final List<TypeMessage> typeMessages) {
+    private ModelMessage aggregate(final List<TypeMessage> typeMessages) {
         final ModelBuilder modelBuilder = new ModelBuilder();
         final ContextBuilder ctxBuilder = new ContextBuilder();
         for (final TypeMessage typeMessage : typeMessages) {

@@ -55,4 +55,13 @@ public final class Context {
     public int hashCode() {
         return parameters.hashCode();
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Context");
+        sb.append("{parameters=").append(parameters);
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -112,7 +112,7 @@ public final class AddConstructors implements TypeTransformer {
     }
 
     @Override
-    public TypeMessage transform(final TypeMessage message) {
+    public List<TypeMessage> transform(final TypeMessage message) {
         final Type type = message.getPayload();
         if (type.getKind().equals(Type.Kind.CLASS)) {
             final List<Field> allNonStaticFields = new ArrayList<Field>();
@@ -135,7 +135,7 @@ public final class AddConstructors implements TypeTransformer {
                 if (allNonStaticFields.size() > 0) {
                     if (generateDefaultConstructor && allNonStaticFields.size() == nonFinalFields.size())
                         addMissingConstructor(typeBuilder, type, Collections.<Field>emptyList());
-                    if (finalFields.size() < allNonStaticFields.size())
+                    if (finalFields.size() > 0 && finalFields.size() < allNonStaticFields.size())
                         addMissingConstructor(typeBuilder, type, finalFields);
                     addMissingConstructor(typeBuilder, type, allNonStaticFields);
                 } else {
@@ -154,9 +154,9 @@ public final class AddConstructors implements TypeTransformer {
                     addMissingConstructor(typeBuilder, type, Collections.<Field>emptyList());
                 addMissingConstructor(typeBuilder, type, allNonStaticFields);
             }
-            return new TypeMessage(typeBuilder.toType(), message.getContext());
+            return Collections.singletonList(new TypeMessage(typeBuilder.toType(), message.getContext()));
         } else {
-            return message;
+            return Collections.singletonList(message);
         }
     }
 

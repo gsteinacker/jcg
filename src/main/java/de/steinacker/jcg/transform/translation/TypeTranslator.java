@@ -10,10 +10,7 @@ import de.steinacker.jcg.transform.type.TypeTransformer;
 import de.steinacker.jcg.util.NameUtil;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Translates types from one language into another language, using a Glossary.
@@ -45,7 +42,7 @@ public final class TypeTranslator implements TypeTransformer {
     }
 
     @Override
-    public TypeMessage transform(TypeMessage message) {
+    public List<TypeMessage> transform(TypeMessage message) {
         final Type type = message.getPayload();
         final TypeBuilder typeBuilder = new TypeBuilder(type);
         // Translate the name:
@@ -75,7 +72,7 @@ public final class TypeTranslator implements TypeTransformer {
             typeBuilder.addMethod(transform(method));
         }
 
-        return new TypeMessage(typeBuilder.toType(), message.getContext());
+        return Collections.singletonList(new TypeMessage(typeBuilder.toType(), message.getContext()));
     }
 
     private Method transform(final Method method) {

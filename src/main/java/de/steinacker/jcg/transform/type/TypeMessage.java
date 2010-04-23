@@ -7,6 +7,7 @@ package de.steinacker.jcg.transform.type;
 import de.steinacker.jcg.Context;
 import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.transform.Message;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * An immutable Message implementation with <code>Type</code> payloads.
@@ -44,5 +45,15 @@ public class TypeMessage implements Message<Type> {
     @Override
     public Type getPayload() {
         return payload;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("TypeMessage");
+        sb.append("{payload=").append(payload);
+        sb.append(", context=").append(context);
+        sb.append('}');
+        return sb.toString();
     }
 }

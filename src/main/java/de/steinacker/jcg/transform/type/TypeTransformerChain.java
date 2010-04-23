@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,13 +42,17 @@ public final class TypeTransformerChain implements TypeTransformer {
     }
 
     @Override
-    public TypeMessage transform(final TypeMessage inputMessage) {
-        TypeMessage msg = inputMessage;
+    public List<TypeMessage> transform(final TypeMessage inputMessage) {
+        List<TypeMessage> result = Collections.singletonList(inputMessage);
         for (final TypeTransformer transformer : chain) {
             LOG.info("Applying " + transformer.toString());
-            msg = transformer.transform(msg);
+            final List<TypeMessage> temp = new ArrayList<TypeMessage>();
+            for (final TypeMessage typeMessage : result) {
+                temp.addAll(transformer.transform(typeMessage));
+            }
+            result = temp;
         }
-        return msg;
+        return result;
     }
 
     @Override

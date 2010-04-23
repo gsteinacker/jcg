@@ -10,6 +10,9 @@ import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.model.TypeBuilder;
 import de.steinacker.jcg.visitor.AbstractTypeVisitor;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Guido Steinacker
  * @version %version: 28 %
@@ -19,11 +22,11 @@ public abstract class AbstractTypeTransformer extends AbstractTypeVisitor implem
     public static final String CTX_PARAM_TYPE = "type";
 
     @Override
-    public final TypeMessage transform(final TypeMessage message) {
+    public final List<TypeMessage> transform(final TypeMessage message) {
         final Type type = message.getPayload();
         final Context ctx = createTransformerContext(message).toContext();
         visit(type, ctx);
-        return new TypeMessage(getTypeBuilder(ctx).toType(), message.getContext());
+        return Collections.singletonList(new TypeMessage(getTypeBuilder(ctx).toType(), message.getContext()));
     }
 
     /**

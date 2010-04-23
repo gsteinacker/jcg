@@ -11,6 +11,7 @@ import de.steinacker.jcg.util.TransformerUtil;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ public final class RemoveSingleEmptyDefaultConstructor implements TypeTransforme
     }
 
     @Override
-    public TypeMessage transform(final TypeMessage message) {
+    public List<TypeMessage> transform(final TypeMessage message) {
         final Type type = message.getPayload();
         if (TransformerUtil.hasSingleEmptyDefaultConstructor(type)) {
             final List<Method> methods = new ArrayList<Method>();
@@ -40,9 +41,9 @@ public final class RemoveSingleEmptyDefaultConstructor implements TypeTransforme
                     methods.add(method);
             }
             final Type transformedType = new TypeBuilder(type).setMethods(methods).toType();
-            return new TypeMessage(transformedType, message.getContext());
+            return Collections.singletonList(new TypeMessage(transformedType, message.getContext()));
         } else {
-            return message;
+            return Collections.singletonList(message);
         }
     }
 

@@ -8,6 +8,9 @@ import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.model.TypeBuilder;
 import org.apache.log4j.Logger;
 
+import java.util.Collections;
+import java.util.List;
+
 import static de.steinacker.jcg.model.TypeModifier.*;
 
 /**
@@ -27,16 +30,16 @@ public final class PublicFinalClass implements TypeTransformer {
     }
 
     @Override
-    public TypeMessage transform(final TypeMessage message) {
+    public List<TypeMessage> transform(final TypeMessage message) {
         final Type type = message.getPayload();
         if (type.is(ABSTRACT) || type.getKind() != Type.Kind.CLASS || (type.is(FINAL) && type.is(PUBLIC))) {
-            return message;
+            return Collections.singletonList(message);
         } else {
             final Type finalizedType = new TypeBuilder(type)
                     .addModifier(FINAL)
                     .addModifier(PUBLIC)
                     .toType();
-            return new TypeMessage(finalizedType, message.getContext());
+            return Collections.singletonList(new TypeMessage(finalizedType, message.getContext()));
         }
     }
 

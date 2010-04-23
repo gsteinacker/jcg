@@ -115,4 +115,33 @@
         </property>
     </bean>
 
+    <bean id="modelTransformer" class="de.steinacker.jcg.transform.model.ModelSequencer">
+        <property name="typeTransformer">
+            <bean id="transformations" class="de.steinacker.jcg.transform.type.TypeTransformerRouter">
+                <property name="selector">
+                    <bean class="de.steinacker.jcg.transform.rule.TransformerSelectors">
+                        <property name="rules">
+                            <list>
+                                <bean class="de.steinacker.jcg.transform.rule.AnnotationSelector">
+                                    <property name="annotationNames">
+                                        <list>
+                                            <value>de.steinacker.jcg.annotation.Mutable</value>
+                                            <value>de.steinacker.jcg.annotation.Immutable</value>
+                                            <value>de.steinacker.jcg.annotation.TransformWith</value>
+                                        </list>
+                                    </property>
+                                </bean>
+                                <bean class="de.steinacker.jcg.transform.rule.ContextParamSelector">
+                                    <property name="ctxParam" value="ctx-selector-param"/>
+                                </bean>
+                            </list>
+                        </property>
+                    </bean>
+                </property>
+                <property name="name" value="TypeTransformerRouter"/>
+                <property name="transformerProvider" ref="transformerProvider"/>
+            </bean>
+        </property>
+    </bean>
+
 </beans>

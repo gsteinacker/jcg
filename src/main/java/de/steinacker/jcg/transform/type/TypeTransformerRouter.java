@@ -8,6 +8,8 @@ import de.steinacker.jcg.transform.rule.TypeTransformerSelector;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -60,18 +62,24 @@ public final class TypeTransformerRouter implements TypeTransformer {
      *          transform matches to the rule.
      */
     @Override
-    public TypeMessage transform(final TypeMessage message) {
-        TypeMessage tempMessage = message;
+    public List<TypeMessage> transform(final TypeMessage message) {
         final List<String> keys = this.selector.apply(message);
         if (keys.isEmpty()) {
             LOG.warn("No transformers returned from selector " + selector);
         }
+        List<TypeMessage> result = Collections.singletonList(message);
         for (final String key : keys) {
+            // 1. select the TypeTransformer
             final TypeTransformer typeTransformer = provider.getTransformer(key);
             LOG.info("Selecting " + typeTransformer);
-            tempMessage = typeTransformer.transform(tempMessage);
+            // 2. apply transformer to all messages:
+            final List<TypeMessage> messages = new ArrayList<TypeMessage>();
+            for (final TypeMessage typeMessage : result) {
+                messages.addAll(typeTransformer.transform(typeMessage));
+            }
+            result = messages;
         }
-        return tempMessage;
+        return result;
     }
 
     @Override

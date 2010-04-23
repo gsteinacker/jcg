@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -69,7 +70,7 @@ public final class RemoveAnnotations implements TypeTransformer {
     }
 
     @Override
-    public TypeMessage transform(final TypeMessage message) {
+    public List<TypeMessage> transform(final TypeMessage message) {
         final Type type = message.getPayload();
         final List<Annotation> annotations = new ArrayList<Annotation>();
         boolean removedAnnotation = false;
@@ -83,9 +84,9 @@ public final class RemoveAnnotations implements TypeTransformer {
             final Type annotatedType = new TypeBuilder(type)
                     .setAnnotations(annotations)
                     .toType();
-            return new TypeMessage(annotatedType, message.getContext());
+            return Collections.singletonList(new TypeMessage(annotatedType, message.getContext()));
         } else {
-            return message;
+            return Collections.singletonList(message);
         }
     }
 

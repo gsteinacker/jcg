@@ -80,7 +80,7 @@ public final class AddGeneratedAnnotation implements TypeTransformer {
      * @return a new TypeMessage, containing the original type with an additional @Generated annotation.
      */
     @Override
-    public TypeMessage transform(final TypeMessage message) {
+    public List<TypeMessage> transform(final TypeMessage message) {
         final Type type = message.getPayload();
         if (!hasAnnotation(type, GENERATED_ANNOTATION_NAME)) {
             final List<AnnotationParameter> params = new ArrayList<AnnotationParameter>(2);
@@ -101,9 +101,9 @@ public final class AddGeneratedAnnotation implements TypeTransformer {
                     .addAnnotation(new Annotation(GENERATED_ANNOTATION_NAME, params, defaults))
                     .toType();
             // return a new TypeMessage:
-            return new TypeMessage(annotatedType, message.getContext());
+            return Collections.singletonList(new TypeMessage(annotatedType, message.getContext()));
         } else {
-            return message;
+            return Collections.singletonList(message);
         }
     }
 

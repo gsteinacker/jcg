@@ -13,6 +13,7 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import static org.testng.Assert.*;
 
@@ -71,8 +72,9 @@ public class AddConstructorsTest {
 
     @Test
     public void transformDefault() {
-        final TypeMessage tm = transformer.transform(new TypeMessage(typeWithFinalAndNonFinal, context));
-        final Type t = tm.getPayload();
+        final List<TypeMessage> tm = transformer.transform(new TypeMessage(typeWithFinalAndNonFinal, context));
+        assertEquals(tm.size(), 1);
+        final Type t = tm.get(0).getPayload();
         assertEquals(t.getMethods().size(), 1);
         assertTrue(t.getMethods().get(0).isConstructor());
         assertEquals(t.getMethods().get(0).getParameters().size(), 2);
@@ -81,7 +83,9 @@ public class AddConstructorsTest {
     @Test
     public void transformFinalAndNonFinalWithDefaultConstructor() {
         transformer.setGenerateDefaultConstructor(true);
-        final Type t = transformer.transform(new TypeMessage(typeWithFinalAndNonFinal, context)).getPayload();
+        final List<TypeMessage> typeMessages = transformer.transform(new TypeMessage(typeWithFinalAndNonFinal, context));
+        assertEquals(typeMessages.size(), 1);
+        final Type t = typeMessages.get(0).getPayload();
         assertEquals(t.getMethods().size(), 1);
         assertTrue(t.getMethods().get(0).isConstructor());
         assertEquals(t.getMethods().get(0).getParameters().size(), 2);
@@ -90,7 +94,9 @@ public class AddConstructorsTest {
     @Test
     public void transformTwoFinalsWithDefaultConstructor() {
         transformer.setGenerateDefaultConstructor(true);
-        final Type t = transformer.transform(new TypeMessage(typeWithTwoFinals, context)).getPayload();
+        final List<TypeMessage> typeMessages = transformer.transform(new TypeMessage(typeWithTwoFinals, context));
+        assertEquals(typeMessages.size(), 1);
+        final Type t = typeMessages.get(0).getPayload();
         assertEquals(t.getMethods().size(), 1);
         assertTrue(t.getMethods().get(0).isConstructor());
         assertEquals(t.getMethods().get(0).getParameters().size(), 2);
@@ -99,7 +105,9 @@ public class AddConstructorsTest {
     @Test
     public void transformTwoNonFinalsWithDefaultConstructor() {
         transformer.setGenerateDefaultConstructor(true);
-        final Type t = transformer.transform(new TypeMessage(typeWithTwoNonFinals, context)).getPayload();
+        final List<TypeMessage> typeMessages = transformer.transform(new TypeMessage(typeWithTwoNonFinals, context));
+        assertEquals(typeMessages.size(), 1);
+        final Type t = typeMessages.get(0).getPayload();
         assertEquals(t.getMethods().size(), 2);
         assertTrue(t.getMethods().get(0).isConstructor());
         assertEquals(t.getMethods().get(0).getParameters().size(), 0);
@@ -110,8 +118,9 @@ public class AddConstructorsTest {
     @Test
     public void transformTwoNonFinalsWithExistingConstructors() {
         transformer.setGenerateDefaultConstructor(true);
-        final TypeMessage tm = transformer.transform(new TypeMessage(typeWithTwoNonFinals, context));
-        final Type t = transformer.transform(tm).getPayload();
+        final List<TypeMessage> tm = transformer.transform(new TypeMessage(typeWithTwoNonFinals, context));
+        assertEquals(tm.size(), 1);
+        final Type t = transformer.transform(tm.get(0)).get(0).getPayload();
         assertEquals(t.getMethods().size(), 2);
         assertTrue(t.getMethods().get(0).isConstructor());
         assertEquals(t.getMethods().get(0).getParameters().size(), 0);
@@ -129,7 +138,8 @@ public class AddConstructorsTest {
                         .addModifier(MethodModifier.PUBLIC)
                         .toMethod())
                 .toType();
-        final Type t = transformer.transform(new TypeMessage(typeWithConstructor, context)).getPayload();
+        final List<TypeMessage> typeMessages = transformer.transform(new TypeMessage(typeWithConstructor, context));
+        final Type t = typeMessages.get(0).getPayload();
         assertEquals(t.getMethods().size(), 2);
         assertTrue(t.getMethods().get(0).isConstructor());
         assertEquals(t.getMethods().get(0).getParameters().size(), 0);
@@ -140,7 +150,8 @@ public class AddConstructorsTest {
     @Test
     public void transformOnlyFinalFields() {
         transformer.setOnlyFinalFields(true);
-        final TypeMessage tm = transformer.transform(new TypeMessage(typeWithFinalAndNonFinal, context));
+        final List<TypeMessage> typeMessages = transformer.transform(new TypeMessage(typeWithFinalAndNonFinal, context));
+        final TypeMessage tm = typeMessages.get(0);
         final Type t = tm.getPayload();
         assertEquals(t.getMethods().size(), 1);
         final Method constructor = t.getMethods().get(0);
@@ -152,7 +163,8 @@ public class AddConstructorsTest {
     @Test
     public void transformFinalAndNonFinalFields() {
         transformer.setFinalAndNonFinalFields(true);
-        final TypeMessage tm = transformer.transform(new TypeMessage(typeWithFinalAndNonFinal, context));
+        final List<TypeMessage> typeMessages = transformer.transform(new TypeMessage(typeWithFinalAndNonFinal, context));
+        final TypeMessage tm = typeMessages.get(0);
         final Type t = tm.getPayload();
         assertEquals(t.getMethods().size(), 2);
         Method constructor = t.getMethods().get(0);

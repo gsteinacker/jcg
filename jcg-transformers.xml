@@ -23,6 +23,7 @@
                 <ref bean="finalizeFields" />
                 <ref bean="mutable" />
                 <ref bean="immutable" />
+                <ref bean="extractInterface" />
             </list>
         </property>
     </bean>
@@ -81,6 +82,17 @@
 
     <bean id="finalizeFields" class="de.steinacker.jcg.transform.type.FinalizeFields"/>
 
+    <bean id="extractInterface" class="de.steinacker.jcg.transform.type.ExtractInterface">
+        <property name="classAbsolutePackage" value="" />
+        <property name="interfaceAbsolutePackage" value="" />
+        <property name="classPrefix" value="" />
+        <property name="classSuffix" value="Impl" />
+        <property name="interfacePrefix" value="" />
+        <property name="classRelativePackage" value="" />
+        <property name="interfaceRelativePackage" value="" />
+        <property name="addOverrideAnnotation" value="true" />
+    </bean>
+
     <bean id="mutable" class="de.steinacker.jcg.transform.type.TypeTransformerChain">
         <property name="name" value="Mutable"/>
         <property name="transformerChain">
@@ -94,6 +106,7 @@
                 <ref bean="addGeneratedAnnotation" />
                 <ref bean="removeJcgAnnotations" />
                 <ref bean="addSetters" />
+                <ref bean="extractInterface" />
             </list>
         </property>
     </bean>
@@ -111,6 +124,7 @@
                 <ref bean="addGetters" />
                 <ref bean="addGeneratedAnnotation" />
                 <ref bean="removeJcgAnnotations" />
+                <ref bean="extractInterface" />
             </list>
         </property>
     </bean>

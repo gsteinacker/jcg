@@ -18,8 +18,6 @@ import java.util.List;
  */
 public final class Annotation {
 
-    private static final String VALUE_PARAM = "value";
-
     @NotNull
     @Valid
     private final QualifiedName name;
@@ -29,6 +27,12 @@ public final class Annotation {
     @NotNull
     @Valid
     private final List<AnnotationParameter> defaults;
+
+    public Annotation(final QualifiedName name) {
+        this.name = name;
+        this.parameters = Collections.emptyList();
+        this.defaults = Collections.emptyList();
+    }
 
     public Annotation(final QualifiedName name,
                       final List<AnnotationParameter> parameters,

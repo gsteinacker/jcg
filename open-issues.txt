@@ -38,7 +38,6 @@ ID      Prio    Description
                 your own stuff to a generated class), enums and annotation types.
 44        2     Implement EqualsAndHashcode Transformer
 45        2     Implement ToString Transformer
-46        2     Implement Transformers to generate Interfaces and Enumerations
 47        2     Implement support for inheritance: Customer IS-A Person => Either an
                 AbstractPerson, or a Person interface is generated.
 48        2     Implement transformer-chain configurations using (type or package-level) a

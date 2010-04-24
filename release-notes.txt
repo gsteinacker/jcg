@@ -32,4 +32,6 @@ ID      Prio    Description
                 a prerequisite for merging generated code with manipulated code.
                 Open Issue: types used in the body are not yet imported (see #67)
 85        2     Added an ANT build.
-21        2     Parsing + generation of interface types             
+21        2     Parsing + generation of interface types
+46        2     Added a Transformer to extract interfaces from a type.
+                TypeTransformers are now able to create multiple TypeMessages.

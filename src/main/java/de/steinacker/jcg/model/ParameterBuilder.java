@@ -12,7 +12,7 @@ import java.util.List;
 public final class ParameterBuilder {
     @NotNull
     @Valid
-    private QualifiedName typeName;
+    private TypeSymbol type;
     @NotNull
     @Valid
     private SimpleName name;
@@ -23,8 +23,8 @@ public final class ParameterBuilder {
     @NotNull
     private String comment = "";
 
-    public ParameterBuilder setTypeName(final QualifiedName typeName) {
-        this.typeName = typeName;
+    public ParameterBuilder setType(final TypeSymbol typeSymbol) {
+        this.type = typeSymbol;
         return this;
     }
 
@@ -49,6 +49,6 @@ public final class ParameterBuilder {
     }
 
     public Parameter toParameter() {
-        return new Parameter(typeName, name, annotations, aFinal, comment);
+        return new Parameter(type, name, annotations, aFinal, comment);
     }
 }

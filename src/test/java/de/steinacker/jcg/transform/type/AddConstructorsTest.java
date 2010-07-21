@@ -5,17 +5,18 @@ package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.Context;
 import de.steinacker.jcg.ContextBuilder;
+import de.steinacker.jcg.codegen.VelocityTemplateProcessor;
 import de.steinacker.jcg.model.*;
 import de.steinacker.jcg.util.DefaultFormatStringProvider;
 import de.steinacker.jcg.util.FormatStringProvider;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.util.EnumSet;
 import java.util.List;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 
 public class AddConstructorsTest {
@@ -27,12 +28,12 @@ public class AddConstructorsTest {
             .setKind(Type.Kind.CLASS)
             .addField(new FieldBuilder()
                     .setName(SimpleName.valueOf("finalField"))
-                    .setTypeName(QualifiedName.valueOf("java.lang.String"))
+                    .setType(TYPESYMBOL_JAVA_LANG_STRING)
                     .setModifiers(EnumSet.of(FieldModifier.FINAL))
                     .toField())
             .addField(new FieldBuilder()
                     .setName(SimpleName.valueOf("nonFinalField"))
-                    .setTypeName(QualifiedName.valueOf("java.lang.String"))
+                    .setType(TYPESYMBOL_JAVA_LANG_STRING)
                     .toField())
             .toType();
     private final Type typeWithTwoFinals = new TypeBuilder()
@@ -40,12 +41,12 @@ public class AddConstructorsTest {
             .setKind(Type.Kind.CLASS)
             .addField(new FieldBuilder()
                     .setName(SimpleName.valueOf("firstFinalField"))
-                    .setTypeName(QualifiedName.valueOf("java.lang.String"))
+                    .setType(TYPESYMBOL_JAVA_LANG_STRING)
                     .setModifiers(EnumSet.of(FieldModifier.FINAL))
                     .toField())
             .addField(new FieldBuilder()
                     .setName(SimpleName.valueOf("secondFinalField"))
-                    .setTypeName(QualifiedName.valueOf("java.lang.String"))
+                    .setType(TYPESYMBOL_JAVA_LANG_STRING)
                     .setModifiers(EnumSet.of(FieldModifier.FINAL))
                     .toField())
             .toType();
@@ -54,20 +55,22 @@ public class AddConstructorsTest {
             .setKind(Type.Kind.CLASS)
             .addField(new FieldBuilder()
                     .setName(SimpleName.valueOf("firstNonFinalField"))
-                    .setTypeName(QualifiedName.valueOf("java.lang.String"))
+                    .setType(TYPESYMBOL_JAVA_LANG_STRING)
                     .toField())
             .addField(new FieldBuilder()
                     .setName(SimpleName.valueOf("secondNonFinalField"))
-                    .setTypeName(QualifiedName.valueOf("java.lang.String"))
+                    .setType(TYPESYMBOL_JAVA_LANG_STRING)
                     .toField())
             .toType();
     private AddConstructors transformer;
+    private static final TypeSymbol TYPESYMBOL_JAVA_LANG_STRING = new TypeSymbol(QualifiedName.valueOf("java.lang.String"));
 
     @BeforeMethod
     public void setupTransformer() {
         transformer = new AddConstructors();
         transformer.setName("test");
-        transformer.setFormatStringProvider(formatStringProvider);
+        transformer.setTemplateName("/templates/field/setField.vm");
+        transformer.setTemplateProcessor(new VelocityTemplateProcessor());
     }
 
     @Test
@@ -134,7 +137,7 @@ public class AddConstructorsTest {
         final Type typeWithConstructor = new TypeBuilder(typeWithTwoNonFinals)
                 .addMethod(new MethodBuilder()
                         .setName(typeWithTwoNonFinals.getName().getSimpleName())
-                        .setReturnTypeName(null)
+                        .setReturnType(null)
                         .addModifier(MethodModifier.PUBLIC)
                         .toMethod())
                 .toType();

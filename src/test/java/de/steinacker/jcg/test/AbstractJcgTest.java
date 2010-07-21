@@ -17,28 +17,26 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.BeforeTest;
 
 import java.util.Map;
 
 public abstract class AbstractJcgTest {
 
-    private static final ApplicationContext applicationContext;
-    private static final Model parsedModel;
-    private static final Model transformedModel;
-    private static final Map<QualifiedName, String> generatedCode;
+    private final ApplicationContext applicationContext;
+    private final Model parsedModel;
+    private final Model transformedModel;
+    private final Map<QualifiedName, String> generatedCode;
 
-    static {
+    public AbstractJcgTest() {
         DOMConfigurator.configureAndWatch("log4j.xml", 60 * 1000);
         final ApplicationContext parent = new FileSystemXmlApplicationContext("jcg.xml");
         final String[] configLocations = {"jcg-test-generator.xml"};
         applicationContext = new ClassPathXmlApplicationContext(configLocations, parent);
         final Parser parser = applicationContext.getBean("parser", Parser.class);
-        parsedModel = parser.parse("src/test/resources/test", true, "./out");
+        parsedModel = parser.parse(getTestSources(), true, "./out");
         final ModelTransformer transformer = applicationContext.getBean("modelTransformer", ModelTransformer.class);
 
-        final Context context = new ContextBuilder().addParameter("ctx-selector-param", "Immutable").toContext();
+        final Context context = new ContextBuilder().addParameter("ctx-selector-param", selectTransformer()).toContext();
         transformedModel = transformer.transform(new ModelMessage(parsedModel, context)).getPayload();
         final StringGenerator stringGenerator = applicationContext.getBean("stringGenerator", StringGenerator.class);
         final Generator generator = applicationContext.getBean("generator", Generator.class);
@@ -49,6 +47,10 @@ public abstract class AbstractJcgTest {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+
+    protected abstract String selectTransformer();
+
+    protected abstract String getTestSources();
 
     public final Model getParsedModel() {
         return parsedModel;

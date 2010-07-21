@@ -5,10 +5,7 @@
 package de.steinacker.jcg.transform.type;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +56,7 @@ public final class TypeTransformerChain implements TypeTransformer {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("TypeTransformerChain");
+        sb.append("{name=").append(name);
         sb.append("{chain=").append(chain);
         sb.append('}');
         return sb.toString();

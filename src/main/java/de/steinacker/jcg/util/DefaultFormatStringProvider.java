@@ -18,6 +18,8 @@ public final class DefaultFormatStringProvider implements FormatStringProvider {
 
     private static final Map<QualifiedName, String> accessorFormats = new HashMap<QualifiedName, String>();
     private static final Map<QualifiedName, String> modifierFormats = new HashMap<QualifiedName, String>();
+    private static final QualifiedName DEFAULT_FORMAT_KEY = QualifiedName.valueOf("default");
+
     static {
         final Properties accessorProperties = new Properties();
         final ClassLoader cl = DefaultFormatStringProvider.class.getClassLoader();
@@ -48,7 +50,7 @@ public final class DefaultFormatStringProvider implements FormatStringProvider {
      */
     @Override
     public String getFormatForGetter(final QualifiedName type) {
-        return (accessorFormats.containsKey(type) ? accessorFormats.get(type) : accessorFormats.get(QualifiedName.valueOf("default")));
+        return (accessorFormats.containsKey(type) ? accessorFormats.get(type) : accessorFormats.get(DEFAULT_FORMAT_KEY));
     }
 
     /**
@@ -59,7 +61,7 @@ public final class DefaultFormatStringProvider implements FormatStringProvider {
      */
     @Override
     public String getFormatForSetter(final QualifiedName type) {
-        return (modifierFormats.containsKey(type) ? modifierFormats.get(type) : modifierFormats.get(QualifiedName.valueOf("default")));
+        return (modifierFormats.containsKey(type) ? modifierFormats.get(type) : modifierFormats.get(DEFAULT_FORMAT_KEY));
     }
 
 }

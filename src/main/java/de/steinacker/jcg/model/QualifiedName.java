@@ -10,6 +10,10 @@ import java.util.*;
 
 
 /**
+ * The QualifiedName of a Type or Package.
+ *
+ * TODO: ist das eher ein TypeName? Ein 'normaler' QualifiedName sollte nichts über Wildcards etc. wissen müssen.
+ *
  * @author Guido Steinacker
  * @version %version: 28 %
  */
@@ -100,8 +104,34 @@ public final class QualifiedName implements CharSequence, Comparable<QualifiedNa
             return qualifiedName.substring(0, lastDot);
     }
 
-    public final boolean isPrimitive() {
+    /**
+     * @return true if the named type is a primitive type, false otherwise.
+     */
+    public boolean isPrimitive() {
         return PRIMITIVE_TYPES.contains(qualifiedName);
+    }
+
+    /** Returns true if the type parameters is a type variable like <T>, false if it is a declared type like
+     * java.lang.String.
+     *
+     * The current implementation assumes that all non-primitive types without a package declaration is a
+     * type identifier.
+     *
+     * @return true if the QN is a type variable, false otherwise.
+     * TODO: das sollte kein Member von QualifiedName sein!
+     */
+    public boolean isTypeVariable() {
+        return getPackage().isEmpty() && !isPrimitive();
+    }
+
+    /**
+     * Returns true if the QualifiedName is a wildcard identifier ('?').
+     *
+     * @return true if the QN is a wildcard.
+     * TODO: das sollte kein Member von QualifiedName sein!
+     */
+    public boolean isWildcard() {
+        return qualifiedName.equals("?");
     }
 
     @Override

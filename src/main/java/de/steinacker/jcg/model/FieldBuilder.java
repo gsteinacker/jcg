@@ -8,7 +8,7 @@ import java.util.*;
 
 public final class FieldBuilder {
     private SimpleName name;
-    private QualifiedName typeName;
+    private TypeSymbol type;
     private String initString;
     private List<Annotation> annotations;
     private Set<FieldModifier> modifiers;
@@ -23,7 +23,7 @@ public final class FieldBuilder {
 
     public FieldBuilder(final Field prototype) {
         name = prototype.getName();
-        typeName = prototype.getTypeName();
+        type = prototype.getType();
         initString = prototype.getInitString();
         annotations = new ArrayList<Annotation>(prototype.getAnnotations());
         modifiers = prototype.getModifiers().isEmpty()
@@ -32,13 +32,13 @@ public final class FieldBuilder {
         comment = prototype.getComment();
     }
 
-    public FieldBuilder setName(SimpleName name) {
+    public FieldBuilder setName(final SimpleName name) {
         this.name = name;
         return this;
     }
 
-    public FieldBuilder setTypeName(QualifiedName typeName) {
-        this.typeName = typeName;
+    public FieldBuilder setType(final TypeSymbol type) {
+        this.type = type;
         return this;
     }
 
@@ -47,22 +47,22 @@ public final class FieldBuilder {
         return this;
     }
 
-    public FieldBuilder setAnnotations(List<Annotation> annotations) {
+    public FieldBuilder setAnnotations(final List<Annotation> annotations) {
         this.annotations = annotations;
         return this;
     }
 
-    public FieldBuilder setModifiers(Set<FieldModifier> modifiers) {
+    public FieldBuilder setModifiers(final Set<FieldModifier> modifiers) {
         this.modifiers = modifiers;
         return this;
     }
 
-    public FieldBuilder setComment(String comment) {
+    public FieldBuilder setComment(final String comment) {
         this.comment = comment;
         return this;
     }
 
     public Field toField() {
-        return new Field(name, typeName, initString, annotations, modifiers, comment);
+        return new Field(name, type, initString, annotations, modifiers, comment);
     }
 }

@@ -8,9 +8,11 @@ import de.steinacker.jcg.model.*;
 import de.steinacker.jcg.transform.type.TypeMessage;
 import de.steinacker.jcg.transform.type.TypeTransformer;
 import de.steinacker.jcg.util.NameUtil;
-import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Translates types from one language into another language, using a Glossary.
@@ -19,8 +21,6 @@ import java.util.*;
  * @version %version: 28 %
  */
 public final class TypeTranslator implements TypeTransformer {
-
-    private static final Logger LOG = Logger.getLogger(TypeTranslator.class);
 
     /** A list of possible prefixes of method names, where the remaining part of the
      * method name may be translatable.
@@ -55,15 +55,17 @@ public final class TypeTranslator implements TypeTransformer {
         }
 
         // Translate the parent type:
-        final QualifiedName superClass = type.getNameOfSuperClass();
-        if (superClass != null)
-            typeBuilder.setNameOfSuperClass(translateQualifiedName(superClass));
+        final TypeSymbol superClass = type.getSuperClass();
+        if (superClass != null) {
+            final TypeSymbol translatedSuperClass = translateTypeSymbol(superClass);
+            typeBuilder.setSuperClass(translatedSuperClass);
+        }
 
         // Translate the interfaces:
-        typeBuilder.setNameOfInterfaces(new ArrayList<QualifiedName>());
-        final List<QualifiedName> interfacesOfType = type.getNameOfInterfaces();
-        for (final QualifiedName interfaceName : interfacesOfType) {
-            typeBuilder.addNameOfInterface(translateQualifiedName(interfaceName));
+        typeBuilder.setImplementedInterfaces(new ArrayList<TypeSymbol>());
+        final List<TypeSymbol> implementedInterfaces = type.getImplementedInterfaces();
+        for (final TypeSymbol implementedInterface : implementedInterfaces) {
+            typeBuilder.addImplementedInterface(translateTypeSymbol(implementedInterface));
         }
 
         // Translate methods
@@ -79,16 +81,18 @@ public final class TypeTranslator implements TypeTransformer {
         final MethodBuilder mb = new MethodBuilder(method);
         final SimpleName methodName = method.getName();
         if (method.isConstructor()) {
-            mb.setReturnTypeName(null);
+            mb.setReturnType(null);
             mb.setName(translateSimpleName(methodName));
         } else {
-            mb.setReturnTypeName(translateQualifiedName(method.getReturnTypeName()));
+            final TypeSymbol returnType = method.getReturnType();
+            final QualifiedName translatedType = translateQualifiedName(returnType.getQualifiedName());
+            mb.setReturnType(new TypeSymbol(translatedType, returnType.getTypeParameters()));
             mb.setName(translateCamelHumpName(methodName));
         }
         mb.setParameters(new ArrayList<Parameter>());
         for (final Parameter parameter : method.getParameters()) {
             mb.addParameter(new ParameterBuilder()
-                    .setTypeName(translateQualifiedName(parameter.getTypeName()))
+                    .setType(translateTypeSymbol(parameter.getType()))
                     .setName(translateSimpleName(parameter.getName()))
                     .setAnnotations(parameter.getAnnotations())
                     .setFinal(parameter.isFinal())
@@ -101,7 +105,7 @@ public final class TypeTranslator implements TypeTransformer {
     private Field transform(final Field field) {
         return new FieldBuilder()
                 .setName(translateSimpleName(field.getName()))
-                .setTypeName(translateQualifiedName(field.getTypeName()))
+                .setType(translateTypeSymbol(field.getType()))
                 .setInitString(field.getInitString())
                 .setAnnotations(field.getAnnotations())
                 .setModifiers(field.getModifiers())
@@ -143,6 +147,20 @@ public final class TypeTranslator implements TypeTransformer {
         } else {
             return translateSimpleName(name);
         }
+    }
+
+    private TypeSymbol translateTypeSymbol(final TypeSymbol typeSymbol) {
+        final QualifiedName translatedClassName = translateQualifiedName(typeSymbol.getQualifiedName());
+        final List<TypeParameter> translatedTypeParams = new ArrayList<TypeParameter>();
+        for (final TypeParameter typeParameter : typeSymbol.getTypeParameters()) {
+            final List<QualifiedName> translatedBoundedTypes = new ArrayList<QualifiedName>();
+            for (final QualifiedName boundedType : typeParameter.getBoundedTypes()) {
+                translatedBoundedTypes.add(translateQualifiedName(boundedType));
+            }
+            final QualifiedName translatedParamName = translateQualifiedName(typeParameter.getParamName());
+            translatedTypeParams.add(new TypeParameter(translatedParamName, translatedBoundedTypes));
+        }
+        return new TypeSymbol(translatedClassName, translatedTypeParams);
     }
 
     @Override

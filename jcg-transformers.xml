@@ -55,6 +55,24 @@
         <property name="onlyFinalFields" value="false"/>
         <property name="finalAndNonFinalFields" value="true"/>
         <property name="generateDefaultConstructor" value="true"/>
+        <property name="templateName" value="/templates/field/setField.vm" />
+        <property name="templateProcessor" ref="velocityTemplateProcessor" />
+    </bean>
+
+    <!-- Adds a constructor with parameters for every attribute of the type. If
+         some of the attributes are final and some are not, a second constructor
+         is generated, with parameters for only the final attributes.
+         If there are no final attributes, an empty default constructor is
+         generated.
+    -->
+    <bean id="addConstructorsForMutableTypes"
+          class="de.steinacker.jcg.transform.type.AddConstructors">
+        <property name="name" value="AddConstructors"/>
+        <property name="onlyFinalFields" value="false"/>
+        <property name="finalAndNonFinalFields" value="true"/>
+        <property name="generateDefaultConstructor" value="true"/>
+        <property name="templateName" value="/templates/field/setMutableField.vm" />
+        <property name="templateProcessor" ref="velocityTemplateProcessor" />
     </bean>
 
     <bean id="addGetters" class="de.steinacker.jcg.transform.type.AddGetters"/>
@@ -157,5 +175,7 @@
             </bean>
         </property>
     </bean>
+
+    <bean id="velocityTemplateProcessor" class="de.steinacker.jcg.codegen.VelocityTemplateProcessor" />
 
 </beans>

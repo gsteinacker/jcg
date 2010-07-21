@@ -21,6 +21,7 @@ ID      Prio    Description
 26        2     Initialization blocks (static and non-static).
 27        3     Parsing + generation of nested classes.
 28        3     Parsing + generation of inheritance (incl. implementation of interfaces).
+29        2     Parsing + generation of vararg arguments
 
 ---------------------------------------------------------------------------------------------------
 Release 0.2: More transformers

@@ -16,12 +16,13 @@ import java.util.*;
  */
 public final class Type implements Annotatable {
 
-    public enum Kind { CLASS, INTERFACE, ENUM, ANNOTATION }
-
+    public enum Kind { CLASS, INTERFACE, ENUM, ANNOTATION;
+    }
     /** The qualified Name of the type (e.g. "java.lang.String"). */
     @NotNull
     @Valid
     private final QualifiedName name;
+
     /** The kind of Type: class, interface, enum or annotation (@interface). */
     @NotNull
     private final Kind kind;
@@ -35,11 +36,15 @@ public final class Type implements Annotatable {
     /** The qualified name of the super class. */
     @NotNull
     @Valid
-    private final QualifiedName nameOfSuperClass;
+    private final TypeSymbol superClass;
     /** A list containing the qualified names of all implemented interfaces. */
     @NotNull
     @Valid
-    private final List<QualifiedName> nameOfInterfaces;
+    private final List<TypeSymbol> implementedInterfaces;
+    /** The TypeParameters. */
+    @NotNull
+    @Valid
+    private final List<TypeParameter> typeParameters;
     /** A list containing all methods of this type. */
     @NotNull
     @Valid
@@ -53,7 +58,10 @@ public final class Type implements Annotatable {
     /** A list containing all fields of this type. */
     @NotNull
     @Valid
-    private List<Field> fields;
+    private final List<Field> fields;
+    @NotNull
+    @Valid
+    private final Set<QualifiedName> additionalImports;
 
     /**
      * Creates a new Type instance.
@@ -66,8 +74,9 @@ public final class Type implements Annotatable {
      * @param modifiers A set of Type Modifiers. This set must not contain combinations
      * which are not valid in Java like, for example, ABSTRACT and FINAL.
      * @param comment Comments of this class.
-     * @param nameOfSuperClass The qualified name of the super class.
-     * @param nameOfInterfaces A list containing the qualified names of all implemented interfaces.
+     * @param superClass The qualified name of the super class.
+     * @param implementedInterfaces A list containing the qualified names of all implemented interfaces.
+     * @param typeParameters A list containing the TypeParameters.
      * @param methods A list containing all methods of this type.
      * @param fields A list containing all fields of this type.
      */
@@ -76,24 +85,23 @@ public final class Type implements Annotatable {
                 final List<Annotation> annotations,
                 final Set<TypeModifier> modifiers,
                 final String comment,
-                final QualifiedName nameOfSuperClass,
-                final List<QualifiedName> nameOfInterfaces,
+                final TypeSymbol superClass,
+                final List<TypeSymbol> implementedInterfaces,
+                final List<TypeParameter> typeParameters,
                 final List<Method> methods,
-                final List<Field> fields) {
-        this.nameOfInterfaces = new ArrayList<QualifiedName>(nameOfInterfaces);
+                final List<Field> fields,
+                final Set<QualifiedName> additionalImports) {
+        this.implementedInterfaces = Collections.unmodifiableList(new ArrayList<TypeSymbol>(implementedInterfaces));
         this.kind = kind;
-        this.methods = new ArrayList<Method>(methods);
-        this.annotations = new ArrayList<Annotation>(annotations);
+        this.methods = Collections.unmodifiableList(new ArrayList<Method>(methods));
+        this.annotations = Collections.unmodifiableList(new ArrayList<Annotation>(annotations));
         this.name = name;
         this.modifiers = modifiers.isEmpty() ? EnumSet.noneOf(TypeModifier.class) : EnumSet.copyOf(modifiers);
-        this.nameOfSuperClass = nameOfSuperClass;
-        this.fields = new ArrayList<Field>(fields);
+        this.superClass = superClass;
+        this.typeParameters = Collections.unmodifiableList(new ArrayList<TypeParameter>(typeParameters));
+        this.fields = Collections.unmodifiableList(new ArrayList<Field>(fields));
         this.comment = comment;
-        //Collections.sort(this.fields, new FieldComparator());
-        //Collections.sort(this.methods, new MethodComparator());
-        //Collections.sort(this.annotations, new AnnotationComparator());
-        //Collections.sort(this.modifiers, new ModifierComparator());
-        //Collections.sort(this.nameOfInterfaces);
+        this.additionalImports = Collections.unmodifiableSet(new HashSet<QualifiedName>(additionalImports));
     }
 
     /**
@@ -124,8 +132,16 @@ public final class Type implements Annotatable {
      *
      * @return A list containing the qualified names of all implemented interfaces.
      */
-    public List<QualifiedName> getNameOfInterfaces() {
-        return nameOfInterfaces;
+    public List<TypeSymbol> getImplementedInterfaces() {
+        return implementedInterfaces;
+    }
+
+    /**
+     *
+     * @return A list containing the TypeParameters.
+     */
+    public List<TypeParameter> getTypeParameters() {
+        return typeParameters;
     }
 
     /**
@@ -156,8 +172,8 @@ public final class Type implements Annotatable {
      *
      * @return The qualified name of the super class.
      */
-    public QualifiedName getNameOfSuperClass() {
-        return nameOfSuperClass;
+    public TypeSymbol getSuperClass() {
+        return superClass;
     }
 
     /**
@@ -188,7 +204,7 @@ public final class Type implements Annotatable {
      * @return true, if this class only extends java.lang.Object.
      */
     public boolean isTopLevelClass() {
-        return nameOfSuperClass.toString().equals(Object.class.getSimpleName());
+        return superClass.getQualifiedName().toString().equals(Object.class.getSimpleName());
     }
 
     /**
@@ -204,20 +220,29 @@ public final class Type implements Annotatable {
     /**
      * Returns a list containing all imports of this type.
      *
-     * @return
+     * @return list of imports of this Type.
      */
     public List<QualifiedName> getImports() {
         final Set<QualifiedName> allImports = new HashSet<QualifiedName>();
         
         // Die Oberklasse:
-        final QualifiedName superClass = getNameOfSuperClass();
-        if (superClass != null)
-            allImports.add(superClass);
-
-        // Alle implementierten Interfaces:
-        for (final QualifiedName nameOfInterface : nameOfInterfaces) {
-            allImports.add(nameOfInterface);
+        if (getKind() != Kind.INTERFACE) {
+            final QualifiedName superClass = getSuperClass().getQualifiedName();
+            if (superClass != null)
+                allImports.add(superClass);
+            // Die bounded classes der super class
+            for (final TypeParameter typeParameter : getSuperClass().getTypeParameters()) {
+                allImports.addAll(typeParameter.getBoundedTypes());
+            }
         }
+        // Alle implementierten Interfaces und deren bounded types:
+        for (final TypeSymbol nameOfInterface : implementedInterfaces) {
+            allImports.add(nameOfInterface.getQualifiedName());
+            for (TypeParameter typeParameter : nameOfInterface.getTypeParameters()) {
+                allImports.addAll(typeParameter.getBoundedTypes());
+            }
+        }
+
         // Alle Annotationen:
         for (final Annotation annotation : annotations) {
             allImports.add(annotation.getName());
@@ -225,11 +250,9 @@ public final class Type implements Annotatable {
 
         // In Methoden verwendete Typen:
         for (final Method method : methods) {
-            // Alle Return-Types
+            // Alle Return-Types sowie die bounded types der TypeParameter:
             if (!method.isConstructor()) {
-                final QualifiedName returnTypeName = method.getReturnTypeName();
-                if (!returnTypeName.isPrimitive())
-                    allImports.add(returnTypeName);
+                addTypeSymbolImports(allImports, method.getReturnType());
             }
             // Die Annotationen aller Methoden:
             for (final Annotation annotation : method.getAnnotations()) {
@@ -239,10 +262,16 @@ public final class Type implements Annotatable {
             for (final QualifiedName exception : method.getExceptions()) {
                 allImports.add(exception);
             }
-            // Alle Parameter-Typen der Methoden:
+            // Alle generischen Typen (bounded types):
+            for (final TypeParameter typeParam : method.getTypeParameters()) {
+                for (final QualifiedName boundedType : typeParam.getBoundedTypes()) {
+                    allImports.add(boundedType);
+                }
+            }
+            // Alle Typen von allen Parametern der Methoden:
             for (final Parameter param : method.getParameters()) {
-                if (!param.getTypeName().isPrimitive()) {
-                    allImports.add(param.getTypeName());
+                if (!param.getType().getQualifiedName().isPrimitive()) {
+                    addTypeSymbolImports(allImports, param.getType());
                 }
                 for (final Annotation annotation : param.getAnnotations()) {
                     allImports.add(annotation.getName());
@@ -252,22 +281,52 @@ public final class Type implements Annotatable {
         // In Feldern verwendete Typen:
         for (final Field field : getFields()) {
             // Die Typen aller Attribute:
-            if (!field.getTypeName().isPrimitive())
-                allImports.add(field.getTypeName());
+            addTypeSymbolImports(allImports, field.getType());
+
             // Die Annotationen aller Attribute
             for (final Annotation annotation : field.getAnnotations()) {
                 allImports.add(annotation.getName());
             }
         }
+        // Alle zusätzlichen, von den method bodies benötigten Imports:
+        allImports.addAll(additionalImports);
         // Ergebnisse filtern und sortieren:
         final List<QualifiedName> result = new ArrayList<QualifiedName>(allImports.size());
-        for (final QualifiedName i : allImports) {
-            if (!QualifiedName.valueOf(i).getPackage().equals(name.getPackage()) && !i.toString().startsWith("java.lang")) {
-                result.add(i);
+        for (final QualifiedName qn : allImports) {
+            if (!qn.isTypeVariable()
+                    && !qn.isWildcard()
+                    && !QualifiedName.valueOf(qn).getPackage().equals(name.getPackage())
+                    && !qn.toString().startsWith("java.lang")) {
+                result.add(qn);
             }
         }
         Collections.sort(result);
         return result;
+    }
+
+    private void addTypeSymbolImports(Set<QualifiedName> allImports, TypeSymbol typeSymbol) {
+        final QualifiedName qn = typeSymbol.getQualifiedName();
+        if (!qn.isPrimitive()) {
+            // we are not interested in wildcards ('?') and type variables ('T') because we can not import them.
+            if (!qn.isWildcard() && !qn.isTypeVariable())
+                allImports.add(qn);
+            for (final TypeParameter typeParameter : typeSymbol.getTypeParameters()) {
+                // again, we are not interested in wildcards ('?') and type variables ('T') because we can not
+                // import them.
+                if (!qn.isWildcard() && !qn.isTypeVariable())
+                    allImports.add(typeParameter.getParamName());
+                for (final QualifiedName boundedType : typeParameter.getBoundedTypes()) {
+                    // bounded type should never be wildcards or type variables:
+                    if (boundedType.isWildcard() || boundedType.isTypeVariable())
+                        throw new IllegalStateException("Something strange happened: a bounded type is a wildcard or type-variable...");
+                    allImports.add(boundedType);
+                }
+            }
+        }
+    }
+
+    public Collection<QualifiedName> getAdditionalImports() {
+        return additionalImports;
     }
 
     /** {@inheritDoc} */
@@ -285,8 +344,9 @@ public final class Type implements Annotatable {
         if (!methods.equals(type.methods)) return false;
         if (!modifiers.equals(type.modifiers)) return false;
         if (!name.equals(type.name)) return false;
-        if (!nameOfInterfaces.equals(type.nameOfInterfaces)) return false;
-        if (!nameOfSuperClass.equals(type.nameOfSuperClass)) return false;
+        if (!implementedInterfaces.equals(type.implementedInterfaces)) return false;
+        if (!superClass.equals(type.superClass)) return false;
+        if (!additionalImports.equals(type.additionalImports)) return false;
 
         return true;
     }
@@ -298,11 +358,12 @@ public final class Type implements Annotatable {
         result = 31 * result + kind.hashCode();
         result = 31 * result + (comment.hashCode());
         result = 31 * result + annotations.hashCode();
-        result = 31 * result + nameOfSuperClass.hashCode();
-        result = 31 * result + nameOfInterfaces.hashCode();
+        result = 31 * result + superClass.hashCode();
+        result = 31 * result + implementedInterfaces.hashCode();
         result = 31 * result + methods.hashCode();
         result = 31 * result + modifiers.hashCode();
         result = 31 * result + fields.hashCode();
+        result = 31 * result + additionalImports.hashCode();
         return result;
     }
 
@@ -315,32 +376,44 @@ public final class Type implements Annotatable {
      * @return String representation of the type's signature
      */
     public String toString() {
-        final StringBuilder sigBuilder = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if (modifiers.contains(TypeModifier.PUBLIC))
-            sigBuilder.append("public ");
+            sb.append("public ");
         if (modifiers.contains(TypeModifier.STATIC))
-            sigBuilder.append("static ");
+            sb.append("static ");
         if (modifiers.contains(TypeModifier.ABSTRACT))
-            sigBuilder.append("abstract ");
+            sb.append("abstract ");
         if (modifiers.contains(TypeModifier.FINAL))
-            sigBuilder.append("final ");
+            sb.append("final ");
         switch (kind) {
             case CLASS:
-                sigBuilder.append("class ");
+                sb.append("class ");
                 break;
             case ENUM:
-                sigBuilder.append("enum ");
+                sb.append("enum ");
                 break;
             case INTERFACE:
-                sigBuilder.append("interface ");
+                sb.append("interface ");
                 break;
             case ANNOTATION:
                 throw new IllegalStateException("Annotation types are not yet implemented.");
             default:
                 throw new IllegalStateException(kind + " is not yet implemented.");
         }
-        sigBuilder.append(name.getSimpleName());
-        return sigBuilder.toString();
+        sb.append(name.getSimpleName());
+        if (!typeParameters.isEmpty()) {
+            sb.append("<");
+            boolean firstParam = true;
+            for (final TypeParameter param : typeParameters) {
+                if (firstParam)
+                    firstParam = false;
+                else
+                    sb.append(", ");
+                sb.append(param.toString());
+            }
+            sb.append(">");
+        }
+        return sb.toString();
     }
 
 }

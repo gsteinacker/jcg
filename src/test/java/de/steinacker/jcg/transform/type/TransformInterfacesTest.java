@@ -3,8 +3,6 @@
  */
 package de.steinacker.jcg.transform.type;
 
-import org.testng.annotations.Test;
-
 public class TransformInterfacesTest {
 
 }

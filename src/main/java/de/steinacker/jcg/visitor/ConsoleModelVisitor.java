@@ -16,10 +16,10 @@ public final class ConsoleModelVisitor extends AbstractModelVisitor implements M
     @Override
     public void visit(final Type type, final Context context) {
         System.out.println("Type: " + type.getName());
-        System.out.println("\textends: " + type.getNameOfSuperClass());
+        System.out.println("\textends: " + type.getSuperClass());
         System.out.print("\timplements: ");
-        for (final QualifiedName qualifiedName : type.getNameOfInterfaces()) {
-            System.out.print(qualifiedName.toString() + " ");
+        for (final TypeSymbol typeSymbol : type.getImplementedInterfaces()) {
+            System.out.print(typeSymbol.toString() + " ");
         }
         System.out.println("");
         System.out.println("\tannotations: ");

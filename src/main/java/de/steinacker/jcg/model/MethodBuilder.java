@@ -11,38 +11,49 @@ import java.util.Set;
 
 public final class MethodBuilder {
     private SimpleName name;
+    private Method.Kind kind;
     private String comment;
     private List<Annotation> annotations;
     private Set<MethodModifier> modifiers;
     private List<QualifiedName> exceptions;
-    private QualifiedName returnTypeName;
+    private List<TypeParameter> typeParameters;
+    private TypeSymbol returnType;
     private List<Parameter> parameters;
     private String methodBody;
 
     public MethodBuilder() {
         name = null;
+        kind = null;
         comment = "";
         annotations = new ArrayList<Annotation>();
         modifiers = EnumSet.noneOf(MethodModifier.class);
         exceptions = new ArrayList<QualifiedName>();
-        returnTypeName = QualifiedName.valueOf("void");
+        typeParameters = new ArrayList<TypeParameter>();
+        returnType = new TypeSymbol(QualifiedName.valueOf("void"));
         parameters = new ArrayList<Parameter>();
         methodBody = "";
     }
 
     public MethodBuilder(final Method prototype) {
         this.name = prototype.getName();
+        this.kind = prototype.getKind();
         this.comment = prototype.getComment();
         this.annotations = new ArrayList<Annotation>(prototype.getAnnotations());
         this.modifiers = prototype.getModifiers().isEmpty() ? EnumSet.noneOf(MethodModifier.class) : EnumSet.copyOf(prototype.getModifiers());
         this.exceptions = new ArrayList<QualifiedName>(prototype.getExceptions());
-        this.returnTypeName = prototype.getReturnTypeName();
+        this.typeParameters = new ArrayList<TypeParameter>(prototype.getTypeParameters());
+        this.returnType = prototype.getReturnType();
         this.parameters = new ArrayList<Parameter>(prototype.getParameters());
         this.methodBody = prototype.getMethodBody();
     }
 
     public MethodBuilder setName(final SimpleName name) {
         this.name = name;
+        return this;
+    }
+
+    public MethodBuilder setKind(final Method.Kind kind) {
+        this.kind = kind;
         return this;
     }
 
@@ -81,8 +92,18 @@ public final class MethodBuilder {
         return this;
     }
 
-    public MethodBuilder setReturnTypeName(final QualifiedName returnTypeName) {
-        this.returnTypeName = returnTypeName;
+    public MethodBuilder setTypeParameters(final List<TypeParameter> typeParameters) {
+        this.typeParameters = new ArrayList<TypeParameter>(typeParameters);
+        return this;
+    }
+    
+    public MethodBuilder addTypeParameter(final TypeParameter typeParameter) {
+        this.typeParameters.add(typeParameter);
+        return this;
+    }
+
+    public MethodBuilder setReturnType(final TypeSymbol returnType) {
+        this.returnType = returnType;
         return this;
     }
 
@@ -102,6 +123,8 @@ public final class MethodBuilder {
     }
 
     public Method toMethod() {
-        return new Method(name, annotations, modifiers, exceptions, returnTypeName, parameters, comment, methodBody);
+        return new Method(name, kind, annotations, modifiers, 
+                exceptions, typeParameters, returnType,
+                parameters, comment, methodBody);
     }
 }

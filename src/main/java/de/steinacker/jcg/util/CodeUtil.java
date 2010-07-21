@@ -6,6 +6,7 @@ package de.steinacker.jcg.util;
 
 import de.steinacker.jcg.model.QualifiedName;
 import de.steinacker.jcg.model.Type;
+import de.steinacker.jcg.model.TypeSymbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +28,11 @@ public final class CodeUtil {
     }
 
     public static String printExtends(final Type type) {
+        final TypeSymbol superClass = type.getSuperClass();
         if (type.getKind() == Type.Kind.CLASS
-                && !type.getNameOfSuperClass().equals(QualifiedName.valueOf("java.lang.Object"))) {
-            return new StringBuilder("extends ")
-                    .append(type.getNameOfSuperClass().getSimpleName())
+                && !superClass.equals(QualifiedName.valueOf("java.lang.Object"))) {
+            return  new StringBuilder("extends ")
+                    .append(superClass.toString())
                     .toString();
         } else {
             return "";
@@ -39,16 +41,16 @@ public final class CodeUtil {
 
     public static String printImplements(final Type type) {
         final StringBuilder sb = new StringBuilder();
-        final List<QualifiedName> interfaces = type.getNameOfInterfaces();
+        final List<TypeSymbol> interfaces = type.getImplementedInterfaces();
         if (interfaces.size() > 0) {
             if (type.getKind() == Type.Kind.INTERFACE)
                 sb.append("extends");
             else
                 sb.append("implements");
-            sb.append(" ").append(interfaces.get(0).getSimpleName());
+            sb.append(" ").append(interfaces.get(0).toString());
             if (interfaces.size() > 1) {
                 for (int i=1,n=interfaces.size(); i<n; ++i)
-                    sb.append(", ").append(interfaces.get(i).getSimpleName());
+                    sb.append(", ").append(interfaces.get(i).toString());
             }
         }
         return sb.toString();

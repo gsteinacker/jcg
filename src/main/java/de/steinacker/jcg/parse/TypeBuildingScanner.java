@@ -5,32 +5,30 @@
 package de.steinacker.jcg.parse;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import de.steinacker.jcg.model.*;
-import org.apache.log4j.Logger;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.type.NoType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner6;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
-import java.io.IOException;
 import java.util.*;
 
 import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import static javax.lang.model.type.TypeKind.LONG;
-import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.WARNING;
 
 /**
@@ -55,8 +53,6 @@ import static javax.tools.Diagnostic.Kind.WARNING;
  */
 final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder> {
 
-    private static final Logger LOG = Logger.getLogger(TypeBuildingScanner.class);
-
     private final Types typeUtils;
     private final Messager messager;
     private final Trees trees;
@@ -75,10 +71,12 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
      */
     @Override
     public TypeBuilder visitType(TypeElement e, TypeBuilder typeBuilder) {
+        /*
         // Get the source code of the type:
         final TreePath treePath = trees.getPath(e);
         final SourcePositions sourcePosition = trees.getSourcePositions();
         final CompilationUnitTree compilationUnit = treePath.getCompilationUnit();
+        final Tree tree = treePath.getLeaf();
         final JavaFileObject file = compilationUnit.getSourceFile();
         final String sourceCode;
         try {
@@ -89,21 +87,29 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
             e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             throw new IllegalStateException(e1);
         }
-
-        final Tree tree = treePath.getLeaf();
         final int startPos = (int) sourcePosition.getStartPosition(compilationUnit, tree);
         //final long endPos = sourcePosition.getEndPosition(compilationUnit, tree);
-        final int endPos = sourceCode.indexOf("{", startPos);
+        //final int endPos = sourceCode.indexOf("{", startPos);
         //System.out.println(sourceCode.subSequence(startPos, endPos));
+        */
 
-
+        final TreePath treePath = trees.getPath(e);
+        final CompilationUnitTree compilationUnit = treePath.getCompilationUnit();
+        final List<? extends ImportTree> importTrees = compilationUnit.getImports();
+        for (ImportTree importTree : importTrees) {
+            typeBuilder.addImport(QualifiedName.valueOf(importTree.getQualifiedIdentifier().toString()));
+            if (importTree.isStatic())
+                throw new IllegalStateException("static imports are not yet supported by the scanner.");
+        }
+        
         // handle generic types:
-        if (e.getTypeParameters().size() > 0)
-            throw new UnsupportedOperationException("Generic types are not yet implemented.");
         scan(e.getTypeParameters(), typeBuilder);
 
         // class name:
         typeBuilder.setName(QualifiedName.valueOf(e.getQualifiedName()));
+
+        // type parameters
+        typeBuilder.setTypeParameters(mapToTypeParameters(e.getTypeParameters()));
 
         // modifiers:
         final EnumSet<TypeModifier> typeModifiers = mapToTypeModifiers(e.getModifiers());
@@ -130,7 +136,7 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         typeBuilder.setModifiers(typeModifiers);
 
         // annotations:
-        List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
+        final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
         typeBuilder.setAnnotations(annotations);
 
         // TODO comment:
@@ -138,17 +144,31 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         typeBuilder.setComment("");
 
         // parent class:
-        if (e.getSuperclass() instanceof NoType)
-            typeBuilder.setNameOfSuperClass(null);
-        else
-            typeBuilder.setNameOfSuperClass(QualifiedName.valueOf(e.getSuperclass().toString()));
+        final Tree tree = trees.getPath(e).getLeaf();
+        final JCTree.JCClassDecl jcClassDecl = (JCTree.JCClassDecl)tree;
+
+        // super class:
+        if (e.getSuperclass() instanceof NoType) {
+            typeBuilder.setSuperClass(null);
+        } else {
+            // final QualifiedName superClassQN = QualifiedName.valueOf(e.getSuperclass().toString());
+            if (jcClassDecl.extending != null) {
+                final JCTree.JCExpression expression = (JCTree.JCExpression) jcClassDecl.extending;
+                final TypeSymbol superClass = mapToTypeSymbol(expression.type, expression.getKind());
+                typeBuilder.setSuperClass(superClass);
+            }
+        }
 
         // interfaces:
-        final List<QualifiedName> interfaces = new ArrayList<QualifiedName>(e.getInterfaces().size());
+        /*final List<QualifiedName> interfaces = new ArrayList<QualifiedName>(e.getInterfaces().size());
         for (final TypeMirror typeMirror : e.getInterfaces()) {
             interfaces.add(QualifiedName.valueOf(typeMirror.toString()));
+        }*/
+        //typeBuilder.setImplementedInterfaces(interfaces);
+        for (JCTree.JCExpression jcExpression : jcClassDecl.implementing) {
+            final TypeSymbol implementedInterface = mapToTypeSymbol(jcExpression.type, jcExpression.getKind());
+            typeBuilder.addImplementedInterface(implementedInterface);
         }
-        typeBuilder.setNameOfInterfaces(interfaces);
 
         super.visitType(e, typeBuilder);          // Check the names of any enclosed elements
         return typeBuilder;
@@ -179,62 +199,6 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         return typeBuilder;
     }
 
-    private Method mapToMethod(final ExecutableElement e) {
-        final TreePath treePath = trees.getPath(e);
-        //final SourcePositions sourcePosition = trees.getSourcePositions();
-        //final CompilationUnitTree compilationUnit = treePath.getCompilationUnit();
-        //System.out.println("SourcePosition" + sourcePosition.getStartPosition(compilationUnit, tree));
-        final boolean isInterfaceMethod = e.getEnclosingElement().getKind().equals(ElementKind.INTERFACE);
-        final Tree tree = treePath.getLeaf();
-        final JCTree.JCMethodDecl jcTree = (JCTree.JCMethodDecl)tree;
-        final JCTree.JCBlock block = jcTree.getBody();
-        final String methodBody;
-        if (block != null) {
-            final String b = block.toString();
-            methodBody = b.substring(b.indexOf('{')+1, b.lastIndexOf('}')).trim();
-        } else {
-            methodBody = null;
-        }
-        final String s = e.toString();
-        final SimpleName methodName = SimpleName.valueOf(s.substring(0, s.indexOf('(')));
-        final QualifiedName returnType;
-        if (e.getKind() == METHOD)
-            returnType = QualifiedName.valueOf(e.getReturnType().toString());
-        else
-            returnType = null;
-        final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
-        final List<QualifiedName> exceptions = new ArrayList<QualifiedName>(e.getThrownTypes().size());
-        for (TypeMirror typeMirror : e.getThrownTypes()) {
-            exceptions.add(QualifiedName.valueOf(typeMirror.toString()));
-        }
-        final List<Parameter> parameters = new ArrayList<Parameter>(e.getParameters().size());
-        for (VariableElement variableElement : e.getParameters()) {
-            // TODO: variableElement.getConstantValue();
-            //final String comment = "TODO!";
-            final Parameter param = new ParameterBuilder()
-                    .setTypeName(QualifiedName.valueOf(variableElement.asType().toString()))
-                    .setName(SimpleName.valueOf(variableElement.getSimpleName()))
-                    .setAnnotations(mapToAnnotations(variableElement.getAnnotationMirrors()))
-                    .setFinal(variableElement.getModifiers().contains(Modifier.FINAL))
-                    .setComment("")
-                    .toParameter();
-            parameters.add(param);
-        }
-        // TODO: e.getTypeParameters();
-        final EnumSet<MethodModifier> modifiers = mapToMethodModifiers(e, isInterfaceMethod);
-        final Method method = new MethodBuilder()
-                .setName(methodName)
-                .setAnnotations(annotations)
-                .setModifiers(modifiers)
-                .setExceptions(exceptions)
-                .setReturnTypeName(returnType)
-                .setParameters(parameters)
-                .setMethodBody(methodBody)
-                .toMethod();
-        return method;
-    }
-
-
     /**
      * Check the name of a field, parameter, etc.
      */
@@ -244,23 +208,23 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
             // Is the variable a constant?
             final ElementKind kind = e.getKind();
             if (kind == ENUM_CONSTANT || e.getConstantValue() != null || heuristicallyConstant(e)) {
-                checkAllCaps(e); // includes enum constants                
+                checkAllCaps(e); // includes enum constants
             }
             if (e.getKind() == FIELD) {
                 final SimpleName name = SimpleName.valueOf(e.getSimpleName().toString());
-                final QualifiedName typeName = QualifiedName.valueOf(e.asType().toString());
                 final List<Annotation> annotations = mapToAnnotations(e.getAnnotationMirrors());
                 final EnumSet<FieldModifier> modifiers = mapToFieldModifiers(e);
                 final String comment = "TODO!";
-                final Object constantValue = e.getConstantValue();
+                // TODO final Object constantValue = e.getConstantValue();
                 final TreePath treePath = trees.getPath(e);
                 final Tree tree = treePath.getLeaf();
                 final JCTree.JCVariableDecl jcTree = (JCTree.JCVariableDecl)tree;
-                final JCTree.JCExpression expression = jcTree.getInitializer();
-                final String initString = (expression != null) ? expression.toString() : null;
+                final TypeSymbol fieldType = mapToTypeSymbol(jcTree.vartype.type, jcTree.vartype.getKind());
+                final JCTree.JCExpression initializerExpression = jcTree.getInitializer();
+                final String initString = (initializerExpression != null) ? initializerExpression.toString() : null;
                 typeBuilder.addField(new FieldBuilder()
                         .setName(name)
-                        .setTypeName(typeName)
+                        .setType(fieldType)
                         .setInitString(initString)
                         .setAnnotations(annotations)
                         .setModifiers(modifiers)
@@ -279,10 +243,17 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
     @Override
     public TypeBuilder visitTypeParameter(TypeParameterElement e, TypeBuilder typeBuilder) {
         checkAllCaps(e);
+
+        final QualifiedName paramName = QualifiedName.valueOf(e.getSimpleName().toString());
+        final List<QualifiedName> boundedTypes = new ArrayList<QualifiedName>();
+        for (TypeMirror bound : e.getBounds()) {
+            boundedTypes.add(QualifiedName.valueOf(bound.toString()));
+        }
         // A call to super can be elided with the current language definition.
         // super.visitTypeParameter(e, p);
-        return typeBuilder;
+        return typeBuilder.addTypeParameter(new TypeParameter(paramName, boundedTypes));
     }
+
 
     /**
      * Check the name of a package.
@@ -309,7 +280,6 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         //return typeBuilder; //TODO: annotierte packages / package-info.java
     }
 
-
     @Override
     public TypeBuilder visitUnknown(Element e, TypeBuilder typeBuilder) {
         // This method will be called if a kind of element
@@ -323,6 +293,8 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
     }
 
     // All the name checking methods assume the examined names
+
+
     // are syntactically well-formed identifiers.
 
     /**
@@ -334,6 +306,7 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
      * <p>To check that a Serializable class defines a proper
      * serialVersionUID, run javac with -Xlint:serial.
      *
+     * @param e the VariableElement
      * @return true if this variable is a serialVersionUID field and false otherwise
      */
     private boolean checkForSerial(VariableElement e) {
@@ -350,7 +323,6 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         }
         return false;
     }
-
     /**
      * Using heuristics, return {@code true} is the variable
      * should follow the naming conventions for constants and
@@ -541,16 +513,6 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         return annotationValues;
     }
 
-    private EnumSet<MethodModifier> mapToMethodModifiers(final ExecutableElement e, final boolean isInterfaceMethod) {
-        final EnumSet<MethodModifier> modifiers = EnumSet.noneOf(MethodModifier.class);
-        for (final Modifier modifier : e.getModifiers()) {
-            modifiers.add(MethodModifier.valueOf(modifier.name()));
-        }
-        if (isInterfaceMethod)
-            modifiers.remove(MethodModifier.ABSTRACT);
-        return modifiers;
-    }
-
     private EnumSet<FieldModifier> mapToFieldModifiers(VariableElement e) {
         final EnumSet<FieldModifier> modifiers = EnumSet.noneOf(FieldModifier.class);
         for (final Modifier modifier : e.getModifiers()) {
@@ -559,10 +521,155 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         return modifiers;
     }
 
+    private Method mapToMethod(final ExecutableElement e) {
+        if (e.getKind() != ElementKind.METHOD && e.getKind() != ElementKind.CONSTRUCTOR) {
+            throw new IllegalArgumentException("ExecutableElement is neither a METHOD nor a CONSTRUCTOR");
+        }
+
+        final MethodBuilder methodBuilder = new MethodBuilder();
+
+        final Tree tree = trees.getPath(e).getLeaf();
+        final JCTree.JCMethodDecl jcMethodDecl = (JCTree.JCMethodDecl)tree;
+        //final SourcePositions sourcePosition = trees.getSourcePositions();
+        //final CompilationUnitTree compilationUnit = treePath.getCompilationUnit();
+        //System.out.println("SourcePosition" + sourcePosition.getStartPosition(compilationUnit, tree));
+
+        // METHOD or CONSTRUCTOR?
+        if (e.getKind() == METHOD) {
+            // method name:
+            final String methodName = e.getSimpleName().toString();
+            methodBuilder.setName(SimpleName.valueOf(methodName));
+            // kind of method:
+            methodBuilder.setKind(Method.Kind.METHOD);
+            // return type:;
+            final com.sun.tools.javac.code.Type type = jcMethodDecl.restype.type;
+            final Symbol.TypeSymbol typeSymbol = type.tsym;
+            final QualifiedName returnType = QualifiedName.valueOf(typeSymbol.getQualifiedName().toString());
+            final List<TypeParameter> typeParameters = new ArrayList<TypeParameter>();
+            for (com.sun.tools.javac.code.Type typeParam : type.getTypeArguments()) {
+                typeParameters.add(new TypeParameter(QualifiedName.valueOf(typeParam.toString())));
+            }
+            methodBuilder.setReturnType(new TypeSymbol(returnType, typeParameters));
+            // method body:
+            final JCTree.JCBlock block = jcMethodDecl.getBody();
+            if (block != null) {
+                final String b = block.toString();
+                methodBuilder.setMethodBody(b.substring(b.indexOf('{')+1, b.lastIndexOf('}')).trim());
+            }
+        } else {
+            // method name:
+            final String methodName = e.getEnclosingElement().getSimpleName().toString();
+            methodBuilder.setName(SimpleName.valueOf(methodName));
+            // kind of method:
+            methodBuilder.setKind(Method.Kind.CONSTRUCTOR);
+            // return type:
+            methodBuilder.setReturnType(null);
+        }
+
+        // TypeParameter der Methode: <T> void printHello(T t) => "<T>"
+        methodBuilder.setTypeParameters(mapToTypeParameters(e.getTypeParameters()));
+
+        // annotations:
+        methodBuilder.setAnnotations(mapToAnnotations(e.getAnnotationMirrors()));
+
+        // exceptions:
+        final ArrayList<QualifiedName> exceptions = new ArrayList<QualifiedName>(e.getThrownTypes().size());
+        for (TypeMirror typeMirror : e.getThrownTypes()) {
+            exceptions.add(QualifiedName.valueOf(typeMirror.toString()));
+        }
+        methodBuilder.setExceptions(exceptions);
+
+        // parameters:
+        final List<Parameter> parameters = new ArrayList<Parameter>(e.getParameters().size());
+        for (VariableElement variableElement : e.getParameters()) {
+            // TODO: variableElement.getConstantValue();
+            // TODO: final String comment = "TODO!";
+            final Tree paramTree = trees.getPath(variableElement).getLeaf();
+            final JCTree.JCVariableDecl variableDecl = (JCTree.JCVariableDecl) paramTree;
+            final TypeSymbol paramTypeSymbol = mapToTypeSymbol(variableDecl.vartype.type, variableDecl.vartype.getKind());
+            //final JCTree.JCMethodDecl jcMethodDecl = (JCTree.JCMethodDecl)tree;
+            final Parameter param = new ParameterBuilder()
+                    //.setType(QualifiedName.valueOf(variableElement.asType().toString()))
+                    .setType(paramTypeSymbol)
+                    .setName(SimpleName.valueOf(variableElement.getSimpleName()))
+                    .setAnnotations(mapToAnnotations(variableElement.getAnnotationMirrors()))
+                    .setFinal(variableElement.getModifiers().contains(Modifier.FINAL))
+                    .setComment("")
+                    .toParameter();
+            parameters.add(param);
+        }
+        methodBuilder.setParameters(parameters);
+
+        // modifiers:
+        methodBuilder.setModifiers(mapToMethodModifiers(e));
+
+        return methodBuilder.toMethod();
+    }
+
+    private EnumSet<MethodModifier> mapToMethodModifiers(final ExecutableElement e) {
+        final EnumSet<MethodModifier> modifiers = EnumSet.noneOf(MethodModifier.class);
+        for (final Modifier modifier : e.getModifiers()) {
+            modifiers.add(MethodModifier.valueOf(modifier.name()));
+        }
+        if (e.getEnclosingElement().getKind() == ElementKind.INTERFACE)
+            modifiers.remove(MethodModifier.ABSTRACT);
+        return modifiers;
+    }
+
     private EnumSet<TypeModifier> mapToTypeModifiers(final Set<Modifier> modifiers) {
         final EnumSet<TypeModifier> result = EnumSet.noneOf(TypeModifier.class);
         for (final Modifier modifier : modifiers) {
             result.add(TypeModifier.valueOf(modifier.name()));
+        }
+        return result;
+    }
+
+    private TypeSymbol mapToTypeSymbol(final com.sun.tools.javac.code.Type type, final Tree.Kind kind) {
+        final TypeSymbol typeSymbol;
+        switch (kind) {
+            case PRIMITIVE_TYPE:
+            case MEMBER_SELECT:
+                final QualifiedName primitiveQN = QualifiedName.valueOf(type.tsym.getQualifiedName().toString());
+                typeSymbol = new TypeSymbol(primitiveQN);
+                break;
+            case PARAMETERIZED_TYPE:
+            case IDENTIFIER:
+            case CLASS: {
+                final QualifiedName interfaceQN = QualifiedName.valueOf(type.tsym.getQualifiedName().toString());
+                final List<TypeParameter> typeParameters = new ArrayList<TypeParameter>();
+                for (com.sun.tools.javac.code.Type typeParam : type.getTypeArguments()) {
+                    final TypeKind typeKind = typeParam.getKind();
+                    switch(typeKind) {
+                        case TYPEVAR: //List<T>
+                        case DECLARED: // List<String>
+                        case WILDCARD: // List<? extends Number>
+                            typeParameters.add(new TypeParameter(QualifiedName.valueOf(typeParam.toString())));
+                            break;
+                        default:
+                            throw new IllegalStateException("Unexpected TypeKind " + kind + " while determining type parameters.");
+                    }
+                }
+                typeSymbol = new TypeSymbol(interfaceQN, typeParameters);
+                break;
+            }
+            default:
+                throw new IllegalStateException("Unexpected Tree.Kind " + kind + ".");
+        }
+        return typeSymbol;
+    }
+
+    private List<TypeParameter> mapToTypeParameters(final List<? extends TypeParameterElement> typeParameters) {
+        final List<TypeParameter> result = new ArrayList<TypeParameter>();
+        // generic name
+        if (typeParameters.size() > 0) {
+            for (final TypeParameterElement param : typeParameters) {
+                final QualifiedName paramName = QualifiedName.valueOf(param.toString());
+                final List<QualifiedName> boundedTypes = new ArrayList<QualifiedName>();
+                for (TypeMirror typeMirror : param.getBounds()) {
+                    boundedTypes.add(QualifiedName.valueOf(typeMirror.toString()));
+                }
+                result.add(new TypeParameter(paramName, boundedTypes));
+            }
         }
         return result;
     }

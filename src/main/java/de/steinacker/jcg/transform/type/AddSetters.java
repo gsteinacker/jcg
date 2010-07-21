@@ -56,15 +56,20 @@ public final class AddSetters extends AbstractFieldToMethodTransformer implement
         mb.setName(SimpleName.valueOf("set" + NameUtil.toCamelHumpName(fieldName, true)));
         // Der Parameter für den setter
         mb.addParameter(new ParameterBuilder()
-                .setComment(field.getTypeName().getSimpleName().toString())
+                .setComment(field.getType().toString())
                 .setFinal(true)
                 .setName(field.getName())
-                .setTypeName(field.getTypeName())
+                .setType(field.getType())
                 .toParameter());
         // Method body:
-        final String formatString = formatStringProvider.getFormatForSetter(field.getTypeName());
-        final String code = String.format(formatString, field.getName(), field.getName());
-        mb.setMethodBody(code);
+        final String formatString = formatStringProvider.getFormatForSetter(field.getType().getQualifiedName());
+        if (field.getType().isParameterized()) {
+            String typeParams = field.getType().toString();
+            typeParams = typeParams.substring(typeParams.indexOf('<'));
+            mb.setMethodBody(String.format(formatString, field.getName(), typeParams, field.getName()));
+        } else {
+            mb.setMethodBody(String.format(formatString, field.getName(), "", field.getName()));
+        }
 
         /*
     // TODO Der Sourcecode:

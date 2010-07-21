@@ -21,7 +21,7 @@ public final class Field implements Annotatable {
     private final SimpleName name;
     @NotNull
     @Valid
-    private final QualifiedName typeName;
+    private final TypeSymbol type;
     @NotNull
     private final String initString;
     @NotNull
@@ -33,13 +33,13 @@ public final class Field implements Annotatable {
     private final String comment;
 
     public Field(final SimpleName name,
-                 final QualifiedName typeName,
+                 final TypeSymbol type,
                  final String initString,
                  final List<Annotation> annotations,
                  final Set<FieldModifier> modifiers,
                  final String comment) {
         this.name = name;
-        this.typeName = typeName;
+        this.type = type;
         this.initString = initString != null ? initString : "";
         this.annotations = annotations;
         this.modifiers = modifiers;
@@ -50,8 +50,8 @@ public final class Field implements Annotatable {
         return name;
     }
 
-    public QualifiedName getTypeName() {
-        return typeName;
+    public TypeSymbol getType() {
+        return type;
     }
 
     public String getInitString() {
@@ -86,7 +86,7 @@ public final class Field implements Annotatable {
         if (!initString.equals(field.initString)) return false;
         if (!modifiers.equals(field.modifiers)) return false;
         if (!name.equals(field.name)) return false;
-        if (!typeName.equals(field.typeName)) return false;
+        if (!type.equals(field.type)) return false;
 
         return true;
     }
@@ -94,7 +94,7 @@ public final class Field implements Annotatable {
     @Override
     public int hashCode() {
         int result = name.hashCode();
-        result = 31 * result + typeName.hashCode();
+        result = 31 * result + type.hashCode();
         result = 31 * result + initString.hashCode();
         result = 31 * result + annotations.hashCode();
         result = 31 * result + modifiers.hashCode();
@@ -129,7 +129,7 @@ public final class Field implements Annotatable {
         if (modifiers.contains(FieldModifier.VOLATILE))
             sigBuilder.append("volatile ");
 
-        sigBuilder.append(getTypeName().getSimpleName())
+        sigBuilder.append(getType().toString())
                 .append(" ")
                 .append(getName());
         if (!initString.isEmpty()) {

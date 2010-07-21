@@ -9,7 +9,6 @@ import de.steinacker.jcg.model.*;
 import de.steinacker.jcg.util.DefaultFormatStringProvider;
 import de.steinacker.jcg.util.FormatStringProvider;
 import de.steinacker.jcg.util.NameUtil;
-import org.apache.log4j.Logger;
 
 /**
  * A TypeTransformer which adds getter methods for all non-static attributes of the different types.
@@ -19,8 +18,6 @@ import org.apache.log4j.Logger;
  * @version %version: 28 %
  */
 public final class AddGetters extends AbstractFieldToMethodTransformer implements TypeTransformer {
-
-    private final static Logger LOG = Logger.getLogger(AddGetters.class);
 
     private FormatStringProvider formatStringProvider = new DefaultFormatStringProvider();
 
@@ -55,10 +52,9 @@ public final class AddGetters extends AbstractFieldToMethodTransformer implement
         final String fieldName = field.getName().toString();
         mb.setName(SimpleName.valueOf("get" + NameUtil.toCamelHumpName(fieldName, true)));
         // Der Return-Type der Methode:
-        mb.setReturnTypeName(field.getTypeName());
-        final String formatString = formatStringProvider.getFormatForGetter(field.getTypeName());
-        final String code = String.format(formatString, field.getName());
-        mb.setMethodBody(code);
+        mb.setReturnType(field.getType());
+        final String formatString = formatStringProvider.getFormatForGetter(field.getType().getQualifiedName());
+        mb.setMethodBody(String.format(formatString, field.getName()));
         /*
         // TODO Der Sourcecode:
         mb.setBody(CodeUtil.indent("return " + field.getName() + ";"));

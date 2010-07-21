@@ -4,18 +4,17 @@
 
 package de.steinacker.jcg.transform.type;
 
+import de.steinacker.jcg.codegen.ProcessingContext;
+import de.steinacker.jcg.codegen.TemplateProcessor;
 import de.steinacker.jcg.model.*;
-import de.steinacker.jcg.util.DefaultFormatStringProvider;
-import de.steinacker.jcg.util.FormatStringProvider;
-import de.steinacker.jcg.util.TransformerUtil;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A ModelTransformer which adds constructors to a type.
@@ -39,8 +38,8 @@ import java.util.List;
  */
 public final class AddConstructors implements TypeTransformer {
 
-    private final static Logger LOG = Logger.getLogger(AddConstructors.class);
-    private FormatStringProvider formatStringProvider = new DefaultFormatStringProvider();
+    private String templateName;
+    private TemplateProcessor processor;
     private boolean onlyFinalFields = false;
     private boolean finalAndNonFinalFields;
     private boolean generateDefaultConstructor = false;
@@ -48,7 +47,7 @@ public final class AddConstructors implements TypeTransformer {
 
     /**
      * Injects the name of the transformer.
-     * @param name
+     * @param name the name of the transformer.
      */
     @Required
     public void setName(final String name) {
@@ -56,16 +55,22 @@ public final class AddConstructors implements TypeTransformer {
     }
 
     /**
-     * Inject a {@link FormatStringProvider} implementation used to generate method bodies
-     * for the constructors.
-     * <p>
-     * If no <code>FormatStringProvider</code> is injected, the
-     * {@link DefaultFormatStringProvider} is used.
-     *
-     * @param provider the FormatStringProvider
+     * Injects the name of the template used to generate the code.
+     * @param templateName the name of the template.
      */
-    public void setFormatStringProvider(final FormatStringProvider provider) {
-        this.formatStringProvider = provider;
+    @Required
+    public void setTemplateName(final String templateName) {
+        this.templateName = templateName;
+    }
+
+    /**
+     * Injects the TemplateProcessor used to generate the code.
+     *
+     * @param processor the TemplateProcessor
+     */
+    @Required
+    public void setTemplateProcessor(final TemplateProcessor processor) {
+        this.processor = processor;
     }
 
     /**
@@ -161,21 +166,26 @@ public final class AddConstructors implements TypeTransformer {
     }
 
     private void addMissingConstructor(final TypeBuilder typeBuilder, final Type type, final List<Field> fields) {
-        final Method constructor = generateConstructor(type, fields);
-        if (!TransformerUtil.hasMethodWithSignature(type, constructor))
+        final ProcessingContext ctx = new ProcessingContext();
+        final Method constructor = generateConstructor(ctx, type, fields);
+        if (!TransformerUtil.hasMethodWithSignature(type, constructor)) {
             typeBuilder.addMethod(constructor);
+            typeBuilder.addImports(ctx.getAddedImports());
+        }
+
     }
 
     /**
      * Generates a Method based on a Type and a list of fields.
+     * @param ctx the ProcessingContext used to gather the additional imports needed by the generated code.
      * @param type the Type
      * @param fields the list of fields
      * @return Method
      */
-    private Method generateConstructor(final Type type, final List<Field> fields) {
+    private Method generateConstructor(final ProcessingContext ctx, final Type type, final List<Field> fields) {
         final MethodBuilder methodBuilder = new MethodBuilder()
                 .setName(type.getName().getSimpleName())
-                .setReturnTypeName(null)
+                .setReturnType(null)
                 .addModifier(MethodModifier.PUBLIC);
         // Wenn die Klasse final ist, müssen es die Methoden nicht sein:
         if (!type.getModifiers().contains(TypeModifier.FINAL)) {
@@ -183,16 +193,25 @@ public final class AddConstructors implements TypeTransformer {
         }
         final StringBuilder methodBody = new StringBuilder();
         for (final Field field : fields) {
-            final String formatString = formatStringProvider.getFormatForSetter(field.getTypeName());
-            final String code = String.format(formatString, field.getName(), field.getName());
+            final Map<String, ?> arguments = Collections.singletonMap("field", field);
+            processor.process(ctx, templateName, methodBody, arguments);
+            /*
+            final String formatString = formatStringProvider.getFormatForSetter(field.getType().getQualifiedName());
+            if (field.getType().isParameterized()) {
+                String typeParams = field.getType().toString();
+                typeParams = typeParams.substring(typeParams.indexOf('<'));
+                methodBody.append(String.format(formatString, field.getName(), typeParams, field.getName()));
+            } else {
+                methodBody.append(String.format(formatString, field.getName(), "", field.getName()));
+            }
+            methodBody.append("\n");
+            */
             methodBuilder
                     .addParameter(new ParameterBuilder()
                             .setFinal(true)
                             .setName(field.getName())
-                            .setTypeName(field.getTypeName())
+                            .setType(field.getType())
                             .toParameter());
-            // Method body:
-            methodBody.append(code).append("\n");
             /*
             // TODO Kommentar nicht vergessen:
             commentBuilder.append(field.getComment());
@@ -211,13 +230,15 @@ public final class AddConstructors implements TypeTransformer {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).
-                append("name", name).
-                append("generateDefaultConstructor", generateDefaultConstructor).
-                append("onlyFinalFields", onlyFinalFields).
-                append("finalAndNonFinalFields", finalAndNonFinalFields).
-                append("formatStringProvider", formatStringProvider).
-                toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        /*
+                .append("name", name)
+                .append("generateDefaultConstructor", generateDefaultConstructor)
+                .append("onlyFinalFields", onlyFinalFields)
+                .append("finalAndNonFinalFields", finalAndNonFinalFields)
+                .append("templateName", templateName.getName())
+                .toString();
+                */
     }
 
 }

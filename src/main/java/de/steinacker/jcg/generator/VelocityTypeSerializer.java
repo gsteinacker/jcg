@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Required;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Map;
 import java.util.Set;
 
 
@@ -55,22 +54,18 @@ final class VelocityTypeSerializer implements TypeSerializer {
         this.templateSelector = templateSelector;
     }
 
-    @Override
-    public Writer serializeType(final Type type) throws JcgException {
-        final StringWriter writer = new StringWriter(2048);
-        serializeType(type, writer);
-        return writer;
-    }
 
     @Override
-    public void serializeType(final Type type, final Writer writer) throws JcgException {
+    public void serializeType(final Type type, final Appendable appendable) throws JcgException {
         final VelocityContext vc = new VelocityContext();
         vc.put("type", type);
         vc.put("codeUtil", new CodeUtil());
         vc.put("dateUtil", new DateUtil());
         try {
             final Template velocityTemplate = ve.getTemplate(templateSelector.select(type));
+            final Writer writer = new StringWriter();
             velocityTemplate.merge(vc, writer);
+            appendable.append(writer.toString());
         } catch (final ResourceNotFoundException e) {
             logger.error(e.getMessage(), e);
             throw new TemplateNotFoundException(e);

@@ -4,6 +4,8 @@
 
 package de.steinacker.jcg.model;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 /**
@@ -12,6 +14,8 @@ import java.util.*;
  */
 public final class Model implements Iterable<Type> {
 
+    @NotNull
+    @Valid
     private final Map<QualifiedName, Type> model;
 
     public Model(final Collection<Type> types) {

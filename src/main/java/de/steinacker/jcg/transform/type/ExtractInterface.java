@@ -6,7 +6,6 @@ package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.exception.JcgRuntimeException;
 import de.steinacker.jcg.model.*;
-import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -20,8 +19,6 @@ import java.util.*;
  * @version %version: 28 %
  */
 public final class ExtractInterface implements TypeTransformer {
-
-    private final static Logger LOG = Logger.getLogger(ExtractInterface.class);
 
     private String name = "ExtractInterface";
     private String interfacePrefix = "";
@@ -164,7 +161,7 @@ public final class ExtractInterface implements TypeTransformer {
             final TypeBuilder builder = new TypeBuilder(type);
             final QualifiedName className = buildClassName(type);
             builder.setName(className);
-            builder.addNameOfInterface(buildInterfaceName(type));
+            builder.addImplementedInterface(buildInterfaceTypeSymbol(type));
             final List<Method> methods = new ArrayList<Method>();
             for (final Method method : type.getMethods()) {
                 if (method.isConstructor()) {
@@ -202,7 +199,7 @@ public final class ExtractInterface implements TypeTransformer {
         try {
             final Type type = message.getPayload();
             final TypeBuilder builder = new TypeBuilder(type);
-            builder.setName(buildInterfaceName(type));
+            builder.setName(buildInterfaceTypeSymbol(type).getQualifiedName());
             builder.setKind(Type.Kind.INTERFACE);
             builder.setFields(Collections.<Field>emptyList());
             final List<Method> methods = new ArrayList<Method>();
@@ -214,7 +211,7 @@ public final class ExtractInterface implements TypeTransformer {
                 }
             }
             builder.setMethods(methods);
-            builder.setNameOfSuperClass(null);
+            builder.setSuperClass(null);
             Set<TypeModifier> modifiers = EnumSet.of(TypeModifier.PUBLIC);
             builder.setModifiers(modifiers);
             return new TypeMessage(builder.toType(), message.getContext());
@@ -252,11 +249,11 @@ public final class ExtractInterface implements TypeTransformer {
      * @param type the type.
      * @return the name of the interface.
      */
-    private QualifiedName buildInterfaceName(final Type type) {
+    private TypeSymbol buildInterfaceTypeSymbol(final Type type) {
         final QualifiedName typeName = type.getName();
         final CharSequence packageName = buildPackageName(typeName.getPackage(), interfaceAbsolutePackage, interfaceRelativePackage);
         final String interfaceName = interfacePrefix + typeName.getSimpleName();
-        return QualifiedName.valueOf(packageName, interfaceName);
+        return new TypeSymbol(QualifiedName.valueOf(packageName, interfaceName), type.getTypeParameters());
     }
 
     /**
@@ -282,12 +279,8 @@ public final class ExtractInterface implements TypeTransformer {
         }
         strings = relativePackage.split("/");
         final List<String> relativePath = new ArrayList<String>(strings.length);
-        for (final String string : strings) {
-            relativePath.add(string);
-        }
-        final Iterator<String> relIter = relativePath.iterator();
-        while (relIter.hasNext()) {
-            final String s = relIter.next();
+        relativePath.addAll(Arrays.asList(strings));
+        for (String s : relativePath) {
             if (s.equals("."))
                 continue;
             if (s.equals(".."))

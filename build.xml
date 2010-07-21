@@ -19,6 +19,9 @@
         <fileset dir="lib">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${jdk.home}">
+            <include name="lib/tools.jar" />
+        </fileset>
     </path>
 
     <target name="compile"

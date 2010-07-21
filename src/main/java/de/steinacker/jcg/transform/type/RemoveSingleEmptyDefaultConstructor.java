@@ -7,7 +7,6 @@ package de.steinacker.jcg.transform.type;
 import de.steinacker.jcg.model.Method;
 import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.model.TypeBuilder;
-import de.steinacker.jcg.util.TransformerUtil;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;

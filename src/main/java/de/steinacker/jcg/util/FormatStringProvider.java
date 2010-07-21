@@ -7,7 +7,7 @@ import de.steinacker.jcg.model.QualifiedName;
  * @version %version: 28 %
  */
 public interface FormatStringProvider {
-    String getFormatForGetter(QualifiedName type);
+    public String getFormatForGetter(QualifiedName type);
 
-    String getFormatForSetter(QualifiedName type);
+    public String getFormatForSetter(QualifiedName type);
 }

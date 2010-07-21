@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2010 by Guido Steinacker
  */
-package de.steinacker.jcg.util;
+package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.model.Method;
 import de.steinacker.jcg.model.Parameter;
@@ -13,7 +13,7 @@ import java.util.List;
  * Utility class providing some helper methods used to implement {@link de.steinacker.jcg.transform.Transformer
  * transformers}.
  */
-public final class TransformerUtil {
+final class TransformerUtil {
 
     private TransformerUtil() {
     }
@@ -30,7 +30,7 @@ public final class TransformerUtil {
             for (int i=0, n= existingMethodParameters.size(); i<n; ++i) {
                 final Parameter p1 = existingMethodParameters.get(i);
                 final Parameter p2 = methodParameters.get(i);
-                if (!p1.getTypeName().equals(p2.getTypeName()))
+                if (!p1.getType().equals(p2.getType()))
                     differentParams = true;
             }
             if (!differentParams)
@@ -64,18 +64,20 @@ public final class TransformerUtil {
      */
     public static boolean hasSingleEmptyDefaultConstructor(final Type type) {
         boolean singleEmptyDefaultConstructor = false;
-        int count = 0;
-        for (final Method method : type.getMethods()) {
-            if (method.isConstructor()) {
-                ++count;
-                // more than one constructor
-                if (count > 1) {
-                    singleEmptyDefaultConstructor = false;
-                    break;
-                } else {
-                    final String body = method.getMethodBody().trim();
-                    if (method.getParameters().size() == 0 && (body.equals("super();") || body.isEmpty())) {
-                        singleEmptyDefaultConstructor = true;
+        if (type.getKind() != Type.Kind.INTERFACE) {
+            int count = 0;
+            for (final Method method : type.getMethods()) {
+                if (method.isConstructor()) {
+                    ++count;
+                    // more than one constructor
+                    if (count > 1) {
+                        singleEmptyDefaultConstructor = false;
+                        break;
+                    } else {
+                        final String body = method.getMethodBody().trim();
+                        if (method.getParameters().size() == 0 && (body.equals("super();") || body.isEmpty())) {
+                            singleEmptyDefaultConstructor = true;
+                        }
                     }
                 }
             }

@@ -13,7 +13,6 @@
     <import resource="jcg-generator.xml" />
     
     <bean id="parser" class="de.steinacker.jcg.parse.JavaFileParser"/>
-
     
     <bean id="controller" class="de.steinacker.jcg.JcgController">
         <property name="parser" ref="parser"/>

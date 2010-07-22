@@ -5,11 +5,14 @@
 package de.steinacker.jcg.transform.type;
 
 import de.steinacker.jcg.Context;
+import de.steinacker.jcg.codegen.ProcessingContext;
+import de.steinacker.jcg.codegen.TemplateProcessor;
 import de.steinacker.jcg.model.*;
-import de.steinacker.jcg.util.DefaultFormatStringProvider;
-import de.steinacker.jcg.util.FormatStringProvider;
 import de.steinacker.jcg.util.NameUtil;
-import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Required;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * A TypeTransformer which adds setter methods for all attributes of the different types.
@@ -20,23 +23,42 @@ import org.apache.log4j.Logger;
  */
 public final class AddSetters extends AbstractFieldToMethodTransformer implements TypeTransformer {
 
-    private final static Logger LOG = Logger.getLogger(AddSetters.class);
-
-    private FormatStringProvider formatStringProvider = new DefaultFormatStringProvider();
+    private String name;
+    private String templateName;
+    private TemplateProcessor processor;
 
     /**
-     * Inject a FormatStringProvider implementation used to generate method bodies for setters,
-     * getters and constructors.
-     *
-     * @param provider the FormatStringProvider
+     * Injects the name of the template used to generate the code.
+     * @param templateName the name of the template.
      */
-    public void setFormatStringProvider(final FormatStringProvider provider) {
-        this.formatStringProvider = provider;
+    @Required
+    public void setTemplateName(final String templateName) {
+        this.templateName = templateName;
+    }
+
+    /**
+     * Injects the TemplateProcessor used to generate the code.
+     *
+     * @param processor the TemplateProcessor
+     */
+    @Required
+    public void setTemplateProcessor(final TemplateProcessor processor) {
+        this.processor = processor;
+    }
+
+    /**
+     * Injects the name of the Transformer.
+     *
+     * @param name transformer name.
+     */
+    @Required
+    public void setName(final String name) {
+        this.name = name;
     }
 
     @Override
     public String getName() {
-        return "AddSetters";
+        return name;
     }
 
     @Override
@@ -62,15 +84,12 @@ public final class AddSetters extends AbstractFieldToMethodTransformer implement
                 .setType(field.getType())
                 .toParameter());
         // Method body:
-        final String formatString = formatStringProvider.getFormatForSetter(field.getType().getQualifiedName());
-        if (field.getType().isParameterized()) {
-            String typeParams = field.getType().toString();
-            typeParams = typeParams.substring(typeParams.indexOf('<'));
-            mb.setMethodBody(String.format(formatString, field.getName(), typeParams, field.getName()));
-        } else {
-            mb.setMethodBody(String.format(formatString, field.getName(), "", field.getName()));
-        }
-
+        final Map<String, ?> arguments = Collections.singletonMap("field", field);
+        final StringBuilder methodBody = new StringBuilder();
+        final ProcessingContext ctx = new ProcessingContext();
+        processor.process(ctx, templateName, methodBody, arguments);
+        mb.setMethodBody(methodBody.toString());
+        getTypeBuilder(context).addImports(ctx.getAddedImports());
         /*
     // TODO Der Sourcecode:
     mb.setBody(CodeUtil.indent("return " + field.getName() + ";"));

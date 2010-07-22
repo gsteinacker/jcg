@@ -195,17 +195,6 @@ public final class AddConstructors implements TypeTransformer {
         for (final Field field : fields) {
             final Map<String, ?> arguments = Collections.singletonMap("field", field);
             processor.process(ctx, templateName, methodBody, arguments);
-            /*
-            final String formatString = formatStringProvider.getFormatForSetter(field.getType().getQualifiedName());
-            if (field.getType().isParameterized()) {
-                String typeParams = field.getType().toString();
-                typeParams = typeParams.substring(typeParams.indexOf('<'));
-                methodBody.append(String.format(formatString, field.getName(), typeParams, field.getName()));
-            } else {
-                methodBody.append(String.format(formatString, field.getName(), "", field.getName()));
-            }
-            methodBody.append("\n");
-            */
             methodBuilder
                     .addParameter(new ParameterBuilder()
                             .setFinal(true)

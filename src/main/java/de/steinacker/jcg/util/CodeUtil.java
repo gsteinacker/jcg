@@ -30,7 +30,7 @@ public final class CodeUtil {
     public static String printExtends(final Type type) {
         final TypeSymbol superClass = type.getSuperClass();
         if (type.getKind() == Type.Kind.CLASS
-                && !superClass.equals(QualifiedName.valueOf("java.lang.Object"))) {
+                && !superClass.equals(new TypeSymbol(QualifiedName.valueOf("java.lang.Object")))) {
             return  new StringBuilder("extends ")
                     .append(superClass.toString())
                     .toString();

@@ -7,8 +7,6 @@ import de.steinacker.jcg.Context;
 import de.steinacker.jcg.ContextBuilder;
 import de.steinacker.jcg.codegen.VelocityTemplateProcessor;
 import de.steinacker.jcg.model.*;
-import de.steinacker.jcg.util.DefaultFormatStringProvider;
-import de.steinacker.jcg.util.FormatStringProvider;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -21,7 +19,6 @@ import static org.testng.Assert.assertTrue;
 
 public class AddConstructorsTest {
 
-    private final FormatStringProvider formatStringProvider = new DefaultFormatStringProvider();
     private final Context context = new ContextBuilder().toContext();
     private final Type typeWithFinalAndNonFinal = new TypeBuilder()
             .setName(QualifiedName.valueOf("test.TestClass01"))

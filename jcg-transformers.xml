@@ -16,10 +16,12 @@
                 <ref bean="publicFinalClass" />
                 <ref bean="privatizeFields" />
                 <ref bean="addConstructors" />
+                <ref bean="addConstructorsForMutableTypes" />
                 <ref bean="addGetters" />
                 <ref bean="addGeneratedAnnotation" />
                 <ref bean="removeJcgAnnotations" />
                 <ref bean="addSetters" />
+                <ref bean="addSettersForMutableTypes" />
                 <ref bean="finalizeFields" />
                 <ref bean="mutable" />
                 <ref bean="immutable" />
@@ -67,7 +69,7 @@
     -->
     <bean id="addConstructorsForMutableTypes"
           class="de.steinacker.jcg.transform.type.AddConstructors">
-        <property name="name" value="AddConstructors"/>
+        <property name="name" value="AddConstructorsForMutableTypes"/>
         <property name="onlyFinalFields" value="false"/>
         <property name="finalAndNonFinalFields" value="true"/>
         <property name="generateDefaultConstructor" value="true"/>
@@ -75,7 +77,11 @@
         <property name="templateProcessor" ref="velocityTemplateProcessor" />
     </bean>
 
-    <bean id="addGetters" class="de.steinacker.jcg.transform.type.AddGetters"/>
+    <bean id="addGetters" class="de.steinacker.jcg.transform.type.AddGetters">
+        <property name="name" value="AddGetters"/>
+        <property name="templateName" value="/templates/field/getField.vm" />
+        <property name="templateProcessor" ref="velocityTemplateProcessor" />
+    </bean>
 
     <bean id="addGeneratedAnnotation" class="de.steinacker.jcg.transform.type.AddGeneratedAnnotation">
         <property name="name" value="AddGeneratedAnnotation" />
@@ -96,7 +102,17 @@
         </property>
     </bean>
 
-    <bean id="addSetters" class="de.steinacker.jcg.transform.type.AddSetters"/>
+    <bean id="addSetters" class="de.steinacker.jcg.transform.type.AddSetters">
+        <property name="name" value="AddSetters"/>
+        <property name="templateName" value="/templates/field/setField.vm" />
+        <property name="templateProcessor" ref="velocityTemplateProcessor" />
+    </bean>
+
+    <bean id="addSettersForMutableTypes" class="de.steinacker.jcg.transform.type.AddSetters">
+        <property name="name" value="AddSettersForMutableTypes"/>
+        <property name="templateName" value="/templates/field/setMutableField.vm" />
+        <property name="templateProcessor" ref="velocityTemplateProcessor" />
+    </bean>
 
     <bean id="finalizeFields" class="de.steinacker.jcg.transform.type.FinalizeFields"/>
 

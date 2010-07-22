@@ -97,9 +97,8 @@ final class TypeBuildingScanner extends ElementScanner6<TypeBuilder, TypeBuilder
         final CompilationUnitTree compilationUnit = treePath.getCompilationUnit();
         final List<? extends ImportTree> importTrees = compilationUnit.getImports();
         for (ImportTree importTree : importTrees) {
-            typeBuilder.addImport(QualifiedName.valueOf(importTree.getQualifiedIdentifier().toString()));
-            if (importTree.isStatic())
-                throw new IllegalStateException("static imports are not yet supported by the scanner.");
+            final QualifiedName qualifiedName = QualifiedName.valueOf(importTree.getQualifiedIdentifier().toString());
+            typeBuilder.addImport(new Import(qualifiedName, importTree.isStatic()));
         }
         
         // handle generic types:

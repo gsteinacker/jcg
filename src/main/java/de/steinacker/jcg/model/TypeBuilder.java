@@ -21,7 +21,7 @@ public final class TypeBuilder {
     private List<TypeParameter> typeParameters = new ArrayList<TypeParameter>();
     private List<Method> methods = new ArrayList<Method>();
     private List<Field> fields = new ArrayList<Field>();
-    private Set<QualifiedName> addedImports = new HashSet<QualifiedName>();
+    private Set<Import> addedImports = new HashSet<Import>();
 
     public TypeBuilder() {
     }
@@ -119,11 +119,11 @@ public final class TypeBuilder {
         return this;
     }
 
-    public void addImport(QualifiedName qualifiedName) {
+    public void addImport(final Import qualifiedName) {
         addedImports.add(qualifiedName);
     }
 
-    public void addImports(Set<QualifiedName> qualifiedNames) {
+    public void addImports(final Set<Import> qualifiedNames) {
         addedImports.addAll(qualifiedNames);
     }
 

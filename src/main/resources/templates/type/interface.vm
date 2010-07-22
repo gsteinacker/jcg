@@ -2,7 +2,7 @@ $codeUtil.fileComment()
 package $type.getName().getPackage();
 
 #foreach( $import in $type.imports )
-import $import;
+$import;
 #end
 
 $codeUtil.toJavaDocComment($type.comment, 80)

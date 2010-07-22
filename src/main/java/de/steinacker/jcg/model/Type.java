@@ -61,7 +61,7 @@ public final class Type implements Annotatable {
     private final List<Field> fields;
     @NotNull
     @Valid
-    private final Set<QualifiedName> additionalImports;
+    private final Set<Import> additionalImports;
 
     /**
      * Creates a new Type instance.
@@ -90,7 +90,7 @@ public final class Type implements Annotatable {
                 final List<TypeParameter> typeParameters,
                 final List<Method> methods,
                 final List<Field> fields,
-                final Set<QualifiedName> additionalImports) {
+                final Set<Import> additionalImports) {
         this.implementedInterfaces = Collections.unmodifiableList(new ArrayList<TypeSymbol>(implementedInterfaces));
         this.kind = kind;
         this.methods = Collections.unmodifiableList(new ArrayList<Method>(methods));
@@ -101,7 +101,7 @@ public final class Type implements Annotatable {
         this.typeParameters = Collections.unmodifiableList(new ArrayList<TypeParameter>(typeParameters));
         this.fields = Collections.unmodifiableList(new ArrayList<Field>(fields));
         this.comment = comment;
-        this.additionalImports = Collections.unmodifiableSet(new HashSet<QualifiedName>(additionalImports));
+        this.additionalImports = Collections.unmodifiableSet(new HashSet<Import>(additionalImports));
     }
 
     /**
@@ -223,29 +223,33 @@ public final class Type implements Annotatable {
      * @return list of imports of this Type.
      */
     public List<QualifiedName> getImports() {
-        final Set<QualifiedName> allImports = new HashSet<QualifiedName>();
+        final Set<Import> allImports = new HashSet<Import>();
         
         // Die Oberklasse:
         if (getKind() != Kind.INTERFACE) {
             final QualifiedName superClass = getSuperClass().getQualifiedName();
             if (superClass != null)
-                allImports.add(superClass);
+                allImports.add(new Import(superClass));
             // Die bounded classes der super class
             for (final TypeParameter typeParameter : getSuperClass().getTypeParameters()) {
-                allImports.addAll(typeParameter.getBoundedTypes());
+                for (QualifiedName boundedType : typeParameter.getBoundedTypes()) {
+                    allImports.add(new Import(boundedType));
+                }
             }
         }
         // Alle implementierten Interfaces und deren bounded types:
         for (final TypeSymbol nameOfInterface : implementedInterfaces) {
-            allImports.add(nameOfInterface.getQualifiedName());
+            allImports.add(new Import(nameOfInterface.getQualifiedName()));
             for (TypeParameter typeParameter : nameOfInterface.getTypeParameters()) {
-                allImports.addAll(typeParameter.getBoundedTypes());
+                for (QualifiedName boundedType : typeParameter.getBoundedTypes()) {
+                    allImports.add(new Import(boundedType));
+                }
             }
         }
 
         // Alle Annotationen:
         for (final Annotation annotation : annotations) {
-            allImports.add(annotation.getName());
+            allImports.add(new Import(annotation.getName()));
         }
 
         // In Methoden verwendete Typen:
@@ -256,16 +260,16 @@ public final class Type implements Annotatable {
             }
             // Die Annotationen aller Methoden:
             for (final Annotation annotation : method.getAnnotations()) {
-                allImports.add(annotation.getName());
+                allImports.add(new Import(annotation.getName()));
             }
             // Alle Exceptions der Methoden
             for (final QualifiedName exception : method.getExceptions()) {
-                allImports.add(exception);
+                allImports.add(new Import(exception));
             }
             // Alle generischen Typen (bounded types):
             for (final TypeParameter typeParam : method.getTypeParameters()) {
                 for (final QualifiedName boundedType : typeParam.getBoundedTypes()) {
-                    allImports.add(boundedType);
+                    allImports.add(new Import(boundedType));
                 }
             }
             // Alle Typen von allen Parametern der Methoden:
@@ -274,7 +278,7 @@ public final class Type implements Annotatable {
                     addTypeSymbolImports(allImports, param.getType());
                 }
                 for (final Annotation annotation : param.getAnnotations()) {
-                    allImports.add(annotation.getName());
+                    allImports.add(new Import(annotation.getName()));
                 }
             }
         }
@@ -285,14 +289,15 @@ public final class Type implements Annotatable {
 
             // Die Annotationen aller Attribute
             for (final Annotation annotation : field.getAnnotations()) {
-                allImports.add(annotation.getName());
+                allImports.add(new Import(annotation.getName()));
             }
         }
         // Alle zusätzlichen, von den method bodies benötigten Imports:
         allImports.addAll(additionalImports);
         // Ergebnisse filtern und sortieren:
         final List<QualifiedName> result = new ArrayList<QualifiedName>(allImports.size());
-        for (final QualifiedName qn : allImports) {
+        for (final Import i : allImports) {
+            final QualifiedName qn = i.getQualifiedName();
             if (!qn.isTypeVariable()
                     && !qn.isWildcard()
                     && !QualifiedName.valueOf(qn).getPackage().equals(name.getPackage())
@@ -304,28 +309,28 @@ public final class Type implements Annotatable {
         return result;
     }
 
-    private void addTypeSymbolImports(Set<QualifiedName> allImports, TypeSymbol typeSymbol) {
+    private static void addTypeSymbolImports(final Set<Import> allImports, final TypeSymbol typeSymbol) {
         final QualifiedName qn = typeSymbol.getQualifiedName();
         if (!qn.isPrimitive()) {
             // we are not interested in wildcards ('?') and type variables ('T') because we can not import them.
             if (!qn.isWildcard() && !qn.isTypeVariable())
-                allImports.add(qn);
+                allImports.add(new Import(qn));
             for (final TypeParameter typeParameter : typeSymbol.getTypeParameters()) {
                 // again, we are not interested in wildcards ('?') and type variables ('T') because we can not
                 // import them.
                 if (!qn.isWildcard() && !qn.isTypeVariable())
-                    allImports.add(typeParameter.getParamName());
+                    allImports.add(new Import(typeParameter.getParamName()));
                 for (final QualifiedName boundedType : typeParameter.getBoundedTypes()) {
                     // bounded type should never be wildcards or type variables:
                     if (boundedType.isWildcard() || boundedType.isTypeVariable())
                         throw new IllegalStateException("Something strange happened: a bounded type is a wildcard or type-variable...");
-                    allImports.add(boundedType);
+                    allImports.add(new Import(boundedType));
                 }
             }
         }
     }
 
-    public Collection<QualifiedName> getAdditionalImports() {
+    public Collection<Import> getAdditionalImports() {
         return additionalImports;
     }
 

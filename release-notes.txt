@@ -35,3 +35,6 @@ ID      Prio    Description
 21        2     Parsing + generation of interface types
 46        2     Added a Transformer to extract interfaces from a type.
                 TypeTransformers are now able to create multiple TypeMessages.
+11        1     Implement generic types.
+28        2     Parsing + generation of implemented interfaces and extended classes.
+30        2     Implemented support for static imports 

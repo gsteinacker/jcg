@@ -11,7 +11,6 @@ Release 0.1: Basics
 ---------------------------------------------------------------------------------------------------
 ID      Prio    Description
 ---------------------------------------------------------------------------------------------------
-11        1     Implement generic types.
 15        1     Implement support for arrays in fields and parameters.
 16        1     Implement generation of useful comments, including descriptions from the glossary.
 22        2     Parsing + generation of enum types
@@ -20,7 +19,6 @@ ID      Prio    Description
 25        3     Support nested types
 26        2     Initialization blocks (static and non-static).
 27        3     Parsing + generation of nested classes.
-28        3     Parsing + generation of inheritance (incl. implementation of interfaces).
 29        2     Parsing + generation of vararg arguments
 
 ---------------------------------------------------------------------------------------------------
@@ -43,6 +41,7 @@ ID      Prio    Description
                 AbstractPerson, or a Person interface is generated.
 48        2     Implement transformer-chain configurations using (type or package-level) a
                 nnotations.
+49        2     Provide some really good examples                 
 
 ---------------------------------------------------------------------------------------------------
 Release 0.3 (0.4?): Code Generation
@@ -91,12 +90,14 @@ ID      Prio    Description
 100       3     Implementing merging of models with focus on merging manual changes into generated code.
 
 ---------------------------------------------------------------------------------------------------
-Release 0.6: IDE + ANT Integration
+Release 0.6: IDE + ANT + Maven Integration
 ---------------------------------------------------------------------------------------------------
 ID      Prio    Description
 ---------------------------------------------------------------------------------------------------
-          5     Eclipse integration (Generate a folder, a package or a single class)
-          5     IntelliJ IDEA integration (Generate a folder, a package or a single class)
+          3     Eclipse integration (Generate a folder, a package or a single class)
+          3     IntelliJ IDEA integration (Generate a folder, a package or a single class)
+          3     ANT support
+          3     Maven support
 
 ---------------------------------------------------------------------------------------------------
 Unspecified:

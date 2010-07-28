@@ -10,6 +10,7 @@ import de.steinacker.jcg.model.*;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -59,8 +60,18 @@ public class AddConstructorsTest {
                     .setType(TYPESYMBOL_JAVA_LANG_STRING)
                     .toField())
             .toType();
+    private final Type typeWithCollectionFields = new TypeBuilder()
+            .setName(QualifiedName.valueOf("test.TestClass01"))
+            .setKind(Type.Kind.CLASS)
+            .addField(new FieldBuilder()
+                    .setName(SimpleName.valueOf("listField"))
+                    .setType(TYPESYMBOL_JAVA_UTIL_LIST)
+                    .toField())
+            .toType();
     private AddConstructors transformer;
     private static final TypeSymbol TYPESYMBOL_JAVA_LANG_STRING = new TypeSymbol(QualifiedName.valueOf("java.lang.String"));
+    private static final TypeSymbol TYPESYMBOL_JAVA_UTIL_LIST = new TypeSymbol(QualifiedName.valueOf("java.util.List"),
+            Collections.singletonList(new TypeParameter(QualifiedName.valueOf("T"), Collections.singletonList(QualifiedName.valueOf("java.lang.Number")))));
 
     @BeforeMethod
     public void setupTransformer() {
@@ -176,5 +187,20 @@ public class AddConstructorsTest {
         assertEquals(constructor.getParameters().size(), 2);
         assertEquals(constructor.getParameters().get(0).getName().toString(), "finalField");
         assertEquals(constructor.getParameters().get(1).getName().toString(), "nonFinalField");
+    }
+
+    @Test
+    public void transformTypeWithCollectionFields() {
+        final List<TypeMessage> typeMessages = transformer.transform(new TypeMessage(typeWithCollectionFields, context));
+        final TypeMessage tm = typeMessages.get(0);
+        final Type t = tm.getPayload();
+        assertEquals(t.getMethods().size(), 1);
+        Method constructor = t.getMethods().get(0);
+        assertTrue(constructor.isConstructor());
+        assertEquals(constructor.getParameters().size(), 1);
+        assertEquals(constructor.getParameters().get(0).getName().toString(), "listField");
+        assertTrue(constructor.getMethodBody().contains("this.listField = Collections.unmodifiableList(new ArrayList<T extends Number>(listField));"));
+        assertTrue(t.getImports().contains(new Import(QualifiedName.valueOf("java.util.Collections"))));
+        assertTrue(t.getImports().contains(new Import(QualifiedName.valueOf("java.util.ArrayList"))));
     }
 }

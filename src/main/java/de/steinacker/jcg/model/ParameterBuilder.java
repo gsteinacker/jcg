@@ -19,7 +19,7 @@ public final class ParameterBuilder {
     @NotNull
     @Valid
     private List<Annotation> annotations = Collections.emptyList();
-    private boolean aFinal = true;
+    private boolean isFinal = false;
     @NotNull
     private String comment = "";
 
@@ -39,7 +39,7 @@ public final class ParameterBuilder {
     }
 
     public ParameterBuilder setFinal(final boolean aFinal) {
-        this.aFinal = aFinal;
+        this.isFinal = aFinal;
         return this;
     }
 
@@ -49,6 +49,6 @@ public final class ParameterBuilder {
     }
 
     public Parameter toParameter() {
-        return new Parameter(type, name, annotations, aFinal, comment);
+        return new Parameter(type, name, annotations, isFinal, comment);
     }
 }

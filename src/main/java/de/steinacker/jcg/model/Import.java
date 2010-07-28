@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 public class Import {
     @NotNull
     @Valid
+    // TODO: @ScriptAssert: keine primitive, type-var oder wildcard
     private final QualifiedName qualifiedName;
     private final boolean isStatic;
 
@@ -25,6 +26,8 @@ public class Import {
      *
      */
     public Import(final QualifiedName qualifiedName, final boolean isStatic) {
+        if (qualifiedName.isPrimitive() || qualifiedName.isTypeVariable() || qualifiedName.isWildcard())
+            throw new IllegalArgumentException("QualifiedName must not be a primitive, a type variable or a wildcard.");
         this.qualifiedName = qualifiedName;
         this.isStatic = isStatic;
     }
@@ -34,6 +37,8 @@ public class Import {
      * @param qualifiedName the QualifiedName of the imported type.
      */
     public Import(final QualifiedName qualifiedName) {
+        if (qualifiedName.isPrimitive() || qualifiedName.isTypeVariable() || qualifiedName.isWildcard())
+            throw new IllegalArgumentException("QualifiedName must not be a primitive, a type variable or a wildcard.");
         this.qualifiedName = qualifiedName;
         this.isStatic = false;
     }

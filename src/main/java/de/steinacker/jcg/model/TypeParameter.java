@@ -46,7 +46,7 @@ public final class TypeParameter {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         // generic name
-        sb.append(paramName);
+        sb.append(paramName.getSimpleName());
         boolean firstBound = true;
         for (QualifiedName qn : boundedTypes) {
             if (!qn.toString().equals("java.lang.Object")) {

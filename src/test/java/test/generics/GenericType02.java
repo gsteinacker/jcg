@@ -5,7 +5,7 @@ package test.generics;
 
 public final class GenericType02<T extends Number> {
 
-    <S> GenericType02(S s) {}
+    <S> GenericType02(final S s) {}
 
     public long get(final T t) {
         return t.longValue();

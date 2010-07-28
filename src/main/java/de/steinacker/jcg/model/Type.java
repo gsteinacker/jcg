@@ -222,7 +222,7 @@ public final class Type implements Annotatable {
      *
      * @return list of imports of this Type.
      */
-    public List<QualifiedName> getImports() {
+    public List<Import> getImports() {
         final Set<Import> allImports = new HashSet<Import>();
         
         // Die Oberklasse:
@@ -295,17 +295,26 @@ public final class Type implements Annotatable {
         // Alle zusätzlichen, von den method bodies benötigten Imports:
         allImports.addAll(additionalImports);
         // Ergebnisse filtern und sortieren:
-        final List<QualifiedName> result = new ArrayList<QualifiedName>(allImports.size());
+        final List<Import> result = new ArrayList<Import>(allImports.size());
         for (final Import i : allImports) {
             final QualifiedName qn = i.getQualifiedName();
             if (!qn.isTypeVariable()
                     && !qn.isWildcard()
                     && !QualifiedName.valueOf(qn).getPackage().equals(name.getPackage())
                     && !qn.toString().startsWith("java.lang")) {
-                result.add(qn);
+                result.add(i);
             }
         }
-        Collections.sort(result);
+        Collections.sort(result, new Comparator<Import>() {
+            @Override
+            public int compare(final Import i1, final Import i2) {
+                final int comparedQNs = i1.getQualifiedName().compareTo(i2.getQualifiedName());
+                if (comparedQNs != 0)
+                    return comparedQNs;
+                else
+                    return Boolean.valueOf(i2.isStatic()).compareTo(i1.isStatic());
+            }
+        });
         return result;
     }
 
@@ -318,7 +327,7 @@ public final class Type implements Annotatable {
             for (final TypeParameter typeParameter : typeSymbol.getTypeParameters()) {
                 // again, we are not interested in wildcards ('?') and type variables ('T') because we can not
                 // import them.
-                if (!qn.isWildcard() && !qn.isTypeVariable())
+                if (!typeParameter.getParamName().isWildcard() && !typeParameter.getParamName().isTypeVariable() && !typeParameter.getParamName().isPrimitive())
                     allImports.add(new Import(typeParameter.getParamName()));
                 for (final QualifiedName boundedType : typeParameter.getBoundedTypes()) {
                     // bounded type should never be wildcards or type variables:

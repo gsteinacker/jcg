@@ -4,11 +4,7 @@
 
 package example01;
 
-import de.steinacker.jcg.annotation.Method;
 import de.steinacker.jcg.annotation.Mutable;
-import de.steinacker.jcg.annotation.Property;
-
-import javax.validation.constraints.Pattern;
 
 /**
  * @author Guido Steinacker

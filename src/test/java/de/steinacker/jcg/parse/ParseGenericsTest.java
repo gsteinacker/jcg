@@ -14,10 +14,11 @@ import static org.testng.Assert.*;
 
 public final class ParseGenericsTest extends AbstractJcgTest {
     
-    private static final QualifiedName QN_GENERICTYPE01 = QualifiedName.valueOf("test.generics.GenericType01");
     private static final QualifiedName QN_GENERICINTERFACE01 = QualifiedName.valueOf("test.generics.GenericInterface01");
     private static final QualifiedName QN_GENERICINTERFACE02 = QualifiedName.valueOf("test.generics.GenericInterface02");
     private static final QualifiedName QN_GENERICINTERFACE03 = QualifiedName.valueOf("test.generics.GenericInterface03");
+    private static final QualifiedName QN_GENERICTYPE01 = QualifiedName.valueOf("test.generics.GenericType01");
+    private static final QualifiedName QN_GENERICTYPE02 = QualifiedName.valueOf("test.generics.GenericType02");
 
     @Test
     public void testModel() {
@@ -32,7 +33,8 @@ public final class ParseGenericsTest extends AbstractJcgTest {
     public void noGenericTypeSymbolsInImports() {
         final Model model = getParsedModel();
         for (final Type type : model.getAllTypes()) {
-            for (final QualifiedName qn : type.getImports()) {
+            for (final Import imp : type.getImports()) {
+                final QualifiedName qn = imp.getQualifiedName();
                 assertFalse(qn.toString().equals("T"));
                 assertFalse(qn.toString().contains("<T>"));
                 assertFalse(qn.toString().equals("S"));
@@ -93,10 +95,10 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         assertEquals(type.getTypeParameters().get(0).getParamName().toString(), "T");
         assertTrue(type.getTypeParameters().get(0).getBoundedTypes().isEmpty());
         // test the imports:
-        final List<QualifiedName> imports = type.getImports();
+        final List<Import> imports = type.getImports();
         assertEquals(imports.size(), 2);
-        assertTrue(imports.contains(QualifiedName.valueOf("java.util.List")));
-        assertTrue(imports.contains(QualifiedName.valueOf("java.io.Serializable")));
+        assertTrue(imports.contains(new Import(QualifiedName.valueOf("java.util.List"))));
+        assertTrue(imports.contains(new Import(QualifiedName.valueOf("java.io.Serializable"))));
         // test the single asList method:
         assertEquals(type.getMethods().size(), 1);
         final Method asList = type.getMethods().get(0);
@@ -136,7 +138,7 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         assertEquals(type.getTypeParameters().get(0).getParamName().toString(), "T");
         assertTrue(type.getTypeParameters().get(0).getBoundedTypes().isEmpty());
         // test the imports:
-        final List<QualifiedName> imports = type.getImports();
+        final List<Import> imports = type.getImports();
         assertEquals(imports.size(), 0);
         // test the single asList method:
         assertEquals(type.getMethods().size(), 0);
@@ -171,7 +173,7 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         // test the type parameters and bounds:
         assertEquals(type.getTypeParameters().size(), 0);
         // test the imports:
-        final List<QualifiedName> imports = type.getImports();
+        final List<Import> imports = type.getImports();
         assertEquals(imports.size(), 0);
         // test the number of methods:
         assertEquals(type.getMethods().size(), 0);
@@ -206,17 +208,74 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         assertEquals(paramName.isTypeVariable(), true);
         assertEquals(typeParameter.getBoundedTypes().size(), 0);
         // test the imports:
-        final List<QualifiedName> imports = type.getImports();
+        final List<Import> imports = type.getImports();
         assertEquals(imports.size(), 2);
-        assertTrue(imports.contains(QualifiedName.valueOf("java.util.List")));
-        assertTrue(imports.contains(QualifiedName.valueOf("java.util.Collections")));
+        assertTrue(imports.contains(new Import(QualifiedName.valueOf("java.util.List"))));
+        assertTrue(imports.contains(new Import(QualifiedName.valueOf("java.util.Collections"))));
         // test the number of methods is 3 because the compiler-generated empty default constructor is not yet removed:
         assertEquals(type.getMethods().size(), 3);
     }
 
-
+    @Test
     public void  testGenericType02() {
-        fail("not yet implemented");
+        final Type type = getParsedModel().getType(QN_GENERICTYPE02);
+        assertNotNull(type);
+        // test for the one and only PUBLIC modifier:
+        assertEquals(type.getModifiers().size(), 2);
+        assertTrue(type.is(TypeModifier.PUBLIC));
+        assertTrue(type.is(TypeModifier.FINAL));
+        // test annotations:
+        assertEquals(type.getAnnotations().size(), 0);
+        // test for the kind of type:
+        assertEquals(type.getKind(), Type.Kind.CLASS);
+        // test the extended interfaces and superclass:
+        assertEquals(type.getImplementedInterfaces().size(), 0);
+        assertNotNull(type.getSuperClass());
+        assertEquals(type.getSuperClass().getQualifiedName().toString(), "java.lang.Object");
+        // test the name and toString() output:
+        assertEquals(type.getName(), QN_GENERICTYPE02);
+        // test the type parameters and bounds:
+        // Das S kommt aus dem <S> des Konstruktors!
+        assertEquals(type.toString(), "public final class GenericType02<T extends Number, S>");
+        assertEquals(type.getTypeParameters().size(), 2);
+        final TypeParameter typeParameterT = type.getTypeParameters().get(0);
+        assertEquals(typeParameterT.toString(), "T extends Number");
+        final QualifiedName paramNameT = typeParameterT.getParamName();
+        assertEquals(paramNameT.toString(), "T");
+        assertEquals(paramNameT.isPrimitive(), false);
+        assertEquals(paramNameT.isWildcard(), false);
+        assertEquals(paramNameT.isTypeVariable(), true);
+        assertEquals(typeParameterT.getBoundedTypes().size(), 1);
+        assertEquals(typeParameterT.getBoundedTypes().get(0).toString(), "java.lang.Number");
+        final TypeParameter typeParameterS = type.getTypeParameters().get(1);
+        assertEquals(typeParameterS.toString(), "S");
+        final QualifiedName paramNameS = typeParameterS.getParamName();
+        assertEquals(paramNameS.toString(), "S");
+        assertEquals(paramNameS.isPrimitive(), false);
+        assertEquals(paramNameS.isWildcard(), false);
+        assertEquals(paramNameS.isTypeVariable(), true);
+        assertEquals(typeParameterS.getBoundedTypes().size(), 0);
+        // test the imports:
+        final List<Import> imports = type.getImports();
+        assertEquals(imports.size(), 0);
+        // test the number of methods:
+        assertEquals(type.getMethods().size(), 2);
+        Method method = type.getMethods().get(0);
+        assertEquals(method.getName().toString(), "GenericType02");
+        assertEquals(method.toString(), "<S> GenericType02(final S s)");
+        assertTrue(method.getAnnotations().isEmpty());
+        assertTrue(method.getModifiers().isEmpty());
+        assertEquals(method.getKind(), Method.Kind.CONSTRUCTOR);
+        assertEquals(method.getTypeParameters().size(), 1);
+        assertEquals(method.getParameters().size(), 1);
+        final Parameter p = method.getParameters().get(0);
+        assertEquals(p.getName().toString(), "s");
+        assertEquals(p.getType().getQualifiedName().toString(), "S");
+        assertFalse(p.getType().getQualifiedName().isPrimitive());
+        assertFalse(p.getType().getQualifiedName().isWildcard());
+        assertTrue(p.getType().getQualifiedName().isTypeVariable());
+        assertTrue(p.isFinal());
+        // ZODO: method = type.getMethods().get(1);
     }
 
     public void  testGenericType03() {

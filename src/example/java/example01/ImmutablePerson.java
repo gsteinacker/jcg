@@ -5,10 +5,8 @@
 package example01;
 
 import de.steinacker.jcg.annotation.Immutable;
-import de.steinacker.jcg.annotation.Method;
-import de.steinacker.jcg.annotation.Property;
 
-import static de.steinacker.jcg.annotation.Immutable.Style.*;
+import static de.steinacker.jcg.annotation.Immutable.Style.CONSTRUCTOR;
 
 /**
  * @author Guido Steinacker

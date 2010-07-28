@@ -7,18 +7,18 @@ import de.steinacker.jcg.model.*;
 import de.steinacker.jcg.test.AbstractJcgTest;
 import org.testng.annotations.Test;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.testng.Assert.*;
 
 
 public final class ParseGenericsTest extends AbstractJcgTest {
     
-    private static final QualifiedName QN_GENERICINTERFACE01 = QualifiedName.valueOf("test.generics.GenericInterface01");
-    private static final QualifiedName QN_GENERICINTERFACE02 = QualifiedName.valueOf("test.generics.GenericInterface02");
-    private static final QualifiedName QN_GENERICINTERFACE03 = QualifiedName.valueOf("test.generics.GenericInterface03");
-    private static final QualifiedName QN_GENERICTYPE01 = QualifiedName.valueOf("test.generics.GenericType01");
-    private static final QualifiedName QN_GENERICTYPE02 = QualifiedName.valueOf("test.generics.GenericType02");
+    private static final QualifiedName QN_GENERICINTERFACE01 = QualifiedName.valueOf("test.types.GenericInterface01");
+    private static final QualifiedName QN_GENERICINTERFACE02 = QualifiedName.valueOf("test.types.GenericInterface02");
+    private static final QualifiedName QN_GENERICINTERFACE03 = QualifiedName.valueOf("test.types.GenericInterface03");
+    private static final QualifiedName QN_GENERICTYPE01 = QualifiedName.valueOf("test.types.GenericType01");
+    private static final QualifiedName QN_GENERICTYPE02 = QualifiedName.valueOf("test.types.GenericType02");
 
     @Test
     public void testModel() {
@@ -95,7 +95,7 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         assertEquals(type.getTypeParameters().get(0).getParamName().toString(), "T");
         assertTrue(type.getTypeParameters().get(0).getBoundedTypes().isEmpty());
         // test the imports:
-        final List<Import> imports = type.getImports();
+        final Set<Import> imports = type.getImports();
         assertEquals(imports.size(), 2);
         assertTrue(imports.contains(new Import(QualifiedName.valueOf("java.util.List"))));
         assertTrue(imports.contains(new Import(QualifiedName.valueOf("java.io.Serializable"))));
@@ -138,7 +138,7 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         assertEquals(type.getTypeParameters().get(0).getParamName().toString(), "T");
         assertTrue(type.getTypeParameters().get(0).getBoundedTypes().isEmpty());
         // test the imports:
-        final List<Import> imports = type.getImports();
+        final Set<Import> imports = type.getImports();
         assertEquals(imports.size(), 0);
         // test the single asList method:
         assertEquals(type.getMethods().size(), 0);
@@ -173,7 +173,7 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         // test the type parameters and bounds:
         assertEquals(type.getTypeParameters().size(), 0);
         // test the imports:
-        final List<Import> imports = type.getImports();
+        final Set<Import> imports = type.getImports();
         assertEquals(imports.size(), 0);
         // test the number of methods:
         assertEquals(type.getMethods().size(), 0);
@@ -208,7 +208,7 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         assertEquals(paramName.isTypeVariable(), true);
         assertEquals(typeParameter.getBoundedTypes().size(), 0);
         // test the imports:
-        final List<Import> imports = type.getImports();
+        final Set<Import> imports = type.getImports();
         assertEquals(imports.size(), 2);
         assertTrue(imports.contains(new Import(QualifiedName.valueOf("java.util.List"))));
         assertTrue(imports.contains(new Import(QualifiedName.valueOf("java.util.Collections"))));
@@ -256,7 +256,7 @@ public final class ParseGenericsTest extends AbstractJcgTest {
         assertEquals(paramNameS.isTypeVariable(), true);
         assertEquals(typeParameterS.getBoundedTypes().size(), 0);
         // test the imports:
-        final List<Import> imports = type.getImports();
+        final Set<Import> imports = type.getImports();
         assertEquals(imports.size(), 0);
         // test the number of methods:
         assertEquals(type.getMethods().size(), 2);
@@ -301,7 +301,7 @@ public final class ParseGenericsTest extends AbstractJcgTest {
 
     @Override
     protected String getTestSources() {
-        return "src/test/java/test/generics";
+        return "src/test/java/test/types";
     }
 
 }

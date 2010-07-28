@@ -63,6 +63,17 @@ public final class Type implements Annotatable {
     @Valid
     private final Set<Import> additionalImports;
 
+    private static class ImportComparator implements Comparator<Import> {
+        @Override
+        public int compare(final Import i1, final Import i2) {
+            final int comparedQNs = i1.getQualifiedName().compareTo(i2.getQualifiedName());
+            if (comparedQNs != 0)
+                return comparedQNs;
+            else
+                return Boolean.valueOf(i2.isStatic()).compareTo(i1.isStatic());
+        }
+    }
+
     /**
      * Creates a new Type instance.
      * Because this constructor has a rather long parameter list, you might prefer using
@@ -101,7 +112,7 @@ public final class Type implements Annotatable {
         this.typeParameters = Collections.unmodifiableList(new ArrayList<TypeParameter>(typeParameters));
         this.fields = Collections.unmodifiableList(new ArrayList<Field>(fields));
         this.comment = comment;
-        this.additionalImports = Collections.unmodifiableSet(new HashSet<Import>(additionalImports));
+        this.additionalImports = Collections.unmodifiableSet(additionalImports);
     }
 
     /**
@@ -222,7 +233,7 @@ public final class Type implements Annotatable {
      *
      * @return list of imports of this Type.
      */
-    public List<Import> getImports() {
+    public SortedSet<Import> getImports() {
         final Set<Import> allImports = new HashSet<Import>();
         
         // Die Oberklasse:
@@ -295,26 +306,17 @@ public final class Type implements Annotatable {
         // Alle zusätzlichen, von den method bodies benötigten Imports:
         allImports.addAll(additionalImports);
         // Ergebnisse filtern und sortieren:
-        final List<Import> result = new ArrayList<Import>(allImports.size());
+        final SortedSet<Import> result = new TreeSet<Import>(new ImportComparator());
         for (final Import i : allImports) {
             final QualifiedName qn = i.getQualifiedName();
             if (!qn.isTypeVariable()
                     && !qn.isWildcard()
+                    && !qn.isPrimitive()
                     && !QualifiedName.valueOf(qn).getPackage().equals(name.getPackage())
                     && !qn.toString().startsWith("java.lang")) {
                 result.add(i);
             }
         }
-        Collections.sort(result, new Comparator<Import>() {
-            @Override
-            public int compare(final Import i1, final Import i2) {
-                final int comparedQNs = i1.getQualifiedName().compareTo(i2.getQualifiedName());
-                if (comparedQNs != 0)
-                    return comparedQNs;
-                else
-                    return Boolean.valueOf(i2.isStatic()).compareTo(i1.isStatic());
-            }
-        });
         return result;
     }
 
@@ -339,7 +341,7 @@ public final class Type implements Annotatable {
         }
     }
 
-    public Collection<Import> getAdditionalImports() {
+    public Set<Import> getAdditionalImports() {
         return additionalImports;
     }
 

@@ -23,6 +23,17 @@ public final class ParameterBuilder {
     @NotNull
     private String comment = "";
 
+    public ParameterBuilder() {
+    }
+
+    public ParameterBuilder(final Parameter prototype) {
+        this.type = prototype.getType();
+        this.name = prototype.getName();
+        this.annotations = prototype.getAnnotations();
+        this.isFinal = prototype.isFinal();
+        this.comment = prototype.getComment();
+    }
+
     public ParameterBuilder setType(final TypeSymbol typeSymbol) {
         this.type = typeSymbol;
         return this;

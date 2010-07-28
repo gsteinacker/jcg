@@ -123,8 +123,12 @@ public final class TypeBuilder {
         addedImports.add(qualifiedName);
     }
 
-    public void addImports(final Set<Import> qualifiedNames) {
-        addedImports.addAll(qualifiedNames);
+    public void setImports(final Set<Import> qualifiedNames) {
+        addedImports = new HashSet<Import>(qualifiedNames);
+    }
+
+    public void addImports(Set<Import> addedImports) {
+        this.addedImports.addAll(addedImports);
     }
 
     public Type toType() {

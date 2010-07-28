@@ -10,7 +10,9 @@ import de.steinacker.jcg.model.Type;
 import de.steinacker.jcg.test.AbstractJcgTest;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.testng.Assert.*;
 
@@ -27,7 +29,7 @@ public final class ParseImportsTest extends AbstractJcgTest {
 
     public void isImportOrderCorrect() {
         final Type type = getParsedModel().getType(QN_CLASS01);
-        final List<Import> imports = type.getImports();
+        final List<Import> imports = new ArrayList<Import>(type.getImports());
         assertEquals(imports.size(), 5);
         assertEquals(imports.get(0), new Import(QualifiedName.valueOf("java.io.*")));
         assertEquals(imports.get(1), new Import(QualifiedName.valueOf("java.util.Collections")));
@@ -39,7 +41,7 @@ public final class ParseImportsTest extends AbstractJcgTest {
     @Test
     public void noJavaLangImports() {
         final Type type = getParsedModel().getType(QN_CLASS01);
-        final List<Import> imports = type.getImports();
+        final Set<Import> imports = type.getImports();
         assertFalse(imports.contains(new Import(QualifiedName.valueOf("java.lang.*"))));
     }
 

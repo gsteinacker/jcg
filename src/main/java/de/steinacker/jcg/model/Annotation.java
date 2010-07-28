@@ -111,10 +111,10 @@ public final class Annotation {
             if(valueParameter != null) {
                 // the prefix "value=" is not needed if it is the only parameter (value=42):
                 String param = valueParameter.toString();
-                param = param.substring("value=".length());
-                // if the value is a list of multiple values, we can also omit the curly braces;
-                if (valueParameter.getValues().size() > 1)
-                    param = param.substring(1, param.length()-1);
+                if (valueParameter.getValues().size() == 1) {
+                    // omit the value= and curly braces
+                    param = param.substring("value={".length()-1);
+                }
                 sb.append(param);
             } else {
                 // all other parameters must contain the parameter's name (foo=42):

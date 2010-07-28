@@ -28,6 +28,12 @@ public final class AnnotationValue {
     @Size(min = 1)
     private final String stringValue;
 
+    /**
+     * Creates an AnnotationValue.
+     *
+     * @param value The parameter value.
+     * @param stringValue A String representation of the parameter value. This may be used to generate source code.
+     */
     public AnnotationValue(final Object value, final String stringValue) {
         this.value = value;
         this.stringValue = stringValue;

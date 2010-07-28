@@ -83,7 +83,7 @@ public final class AddGetters extends AbstractFieldToMethodTransformer implement
         final ProcessingContext ctx = new ProcessingContext();
         processor.process(ctx, templateName, methodBody, arguments);
         mb.setMethodBody(methodBody.toString());
-        getTypeBuilder(context).addImports(ctx.getAddedImports());        
+        getTypeBuilder(context).addImports(ctx.getAddedImports());
         /*
         // TODO Der Sourcecode:
         mb.setBody(CodeUtil.indent("return " + field.getName() + ";"));

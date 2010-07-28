@@ -158,29 +158,33 @@ public final class ExtractInterface implements TypeTransformer {
     private TypeMessage transformToClass(final TypeMessage message) {
         try {
             final Type type = message.getPayload();
-            final TypeBuilder builder = new TypeBuilder(type);
-            final QualifiedName className = buildClassName(type);
-            builder.setName(className);
-            builder.addImplementedInterface(buildInterfaceTypeSymbol(type));
-            final List<Method> methods = new ArrayList<Method>();
-            for (final Method method : type.getMethods()) {
-                if (method.isConstructor()) {
-                    methods.add(new MethodBuilder(method)
-                    .setName(className.getSimpleName())
-                    .toMethod());
-                } else {
-                    if (addOverrideAnnotation && isInterfaceMethodCandidate(method)) {
+            if (type.getKind() == Type.Kind.CLASS) {
+                final TypeBuilder builder = new TypeBuilder(type);
+                final QualifiedName className = buildClassName(type);
+                builder.setName(className);
+                builder.addImplementedInterface(buildInterfaceTypeSymbol(type));
+                final List<Method> methods = new ArrayList<Method>();
+                for (final Method method : type.getMethods()) {
+                    if (method.isConstructor()) {
                         methods.add(new MethodBuilder(method)
-                                .addAnnotation(new Annotation(QualifiedName.valueOf("java.lang.Override")))
-                                .toMethod()
-                        );
+                        .setName(className.getSimpleName())
+                        .toMethod());
                     } else {
-                        methods.add(method);
+                        if (addOverrideAnnotation && isInterfaceMethodCandidate(method)) {
+                            methods.add(new MethodBuilder(method)
+                                    .addAnnotation(new Annotation(QualifiedName.valueOf("java.lang.Override")))
+                                    .toMethod()
+                            );
+                        } else {
+                            methods.add(method);
+                        }
                     }
                 }
+                builder.setMethods(methods);
+                return new TypeMessage(builder.toType(), message.getContext());
+            } else {
+                return message;
             }
-            builder.setMethods(methods);
-            return new TypeMessage(builder.toType(), message.getContext());
         } catch (final NoSuchElementException e) {
             throw new JcgRuntimeException("Can not determine a package for type=" + message.getPayload() + " with ExtractInterface=" + toString());
         }

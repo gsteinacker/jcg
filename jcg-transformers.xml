@@ -11,6 +11,7 @@
     <bean id="transformerProvider" class="de.steinacker.jcg.transform.type.TypeTransformerProvider">
         <property name="transformers">
             <list>
+                <ref bean="typeMapper" />
                 <ref bean="typeTranslator"/>
                 <ref bean="removeSingleEmptyDefaultConstructor"/>
                 <ref bean="publicFinalClass" />
@@ -23,9 +24,9 @@
                 <ref bean="addSetters" />
                 <ref bean="addSettersForMutableTypes" />
                 <ref bean="finalizeFields" />
+                <ref bean="extractInterface" />
                 <ref bean="mutable" />
                 <ref bean="immutable" />
-                <ref bean="extractInterface" />
             </list>
         </property>
     </bean>
@@ -34,9 +35,18 @@
 
     <bean id="glossary" factory-bean="glossaryFactory" factory-method="glossary"/>
 
-    <bean id="typeTranslator"
-          class="de.steinacker.jcg.transform.translation.TypeTranslator">
-        <constructor-arg ref="glossary"/>
+    <!-- Maps types to different types and/or moves types to different packages.
+    -->
+    <bean id="typeMapper" class="de.steinacker.jcg.transform.type.TypeMapper">
+        <property name="name" value="TypeMapper" />
+        <property name="mappingPatterns">
+            <util:properties location="jcg-typemapper.properties" />
+        </property>
+    </bean>
+
+    <bean id="typeTranslator" class="de.steinacker.jcg.transform.translation.TypeTranslator">
+        <property name="name" value="TypeTranslator" />
+        <property name="glossary" ref="glossary"/>
     </bean>
 
     <bean id="removeSingleEmptyDefaultConstructor" class="de.steinacker.jcg.transform.type.RemoveSingleEmptyDefaultConstructor"/>
@@ -132,6 +142,7 @@
         <property name="transformerChain">
             <list>
                 <ref bean="removeSingleEmptyDefaultConstructor" />
+                <ref bean="typeMapper" />
                 <ref bean="typeTranslator" />
                 <ref bean="publicFinalClass" />
                 <ref bean="privatizeFields" />
@@ -150,6 +161,7 @@
         <property name="transformerChain">
             <list>
                 <ref bean="removeSingleEmptyDefaultConstructor" />
+                <ref bean="typeMapper" />
                 <ref bean="typeTranslator" />
                 <ref bean="publicFinalClass" />
                 <ref bean="privatizeFields" />

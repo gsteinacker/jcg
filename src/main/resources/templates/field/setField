@@ -1,0 +1,28 @@
+#set($type = $field.type.qualifiedName.toString())
+#set($typeWithParams = $field.type.toString())
+#if (${typeWithParams.indexOf('<')} > 0)
+    #set($typeParam = ${typeWithParams.substring(${typeWithParams.indexOf('<')})})
+#else
+    #set($typeParam = "")
+#end
+#if($type.equals("java.util.Collection"))
+this.$field.name = Collections.unmodifiableCollection(new ArrayList${typeParam}(${field.name}));
+${ctx.addImport("java.util.Collections")}${ctx.addImport("java.util.ArrayList")}
+#elseif($type.equals("java.util.List"))
+this.$field.name = Collections.unmodifiableList(new ArrayList${typeParam}(${field.name}));
+${ctx.addImport("java.util.Collections")}${ctx.addImport("java.util.ArrayList")}
+#elseif($type.equals("java.util.Set"))
+this.$field.name = Collections.unmodifiableSet(new HashSet${typeParam}(${field.name}));
+${ctx.addImport("java.util.Collections")}${ctx.addImport("java.util.HashSet")}
+#elseif($type.equals("java.util.Map"))
+this.$field.name = Collections.unmodifiableMap(new HashMap${typeParam}(${field.name}));
+${ctx.addImport("java.util.Collections")}${ctx.addImport("java.util.HashMap")}
+#elseif($type.equals("java.util.SortedMap"))
+this.$field.name = Collections.unmodifiableSortedMap(new TreeMap${typeParam}(${field.name}));
+${ctx.addImport("java.util.Collections")}${ctx.addImport("java.util.TreeHashMap")}
+#elseif($type.equals("java.util.SortedSet"))
+this.$field.name = Collections.unmodifiableSortedSet(new TreeSet${typeParam}(${field.name}));
+${ctx.addImport("java.util.Collections")}${ctx.addImport("java.util.TreeSet")}
+#else
+this.$field.name = $field.name;
+#end

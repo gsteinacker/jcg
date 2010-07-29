@@ -67,7 +67,7 @@
         <property name="onlyFinalFields" value="false"/>
         <property name="finalAndNonFinalFields" value="true"/>
         <property name="generateDefaultConstructor" value="true"/>
-        <property name="templateName" value="/templates/field/setField.vm" />
+        <property name="templateName" value="/templates/field/setFieldInMethod.vm" />
         <property name="templateProcessor" ref="velocityTemplateProcessor" />
     </bean>
 
@@ -83,13 +83,13 @@
         <property name="onlyFinalFields" value="false"/>
         <property name="finalAndNonFinalFields" value="true"/>
         <property name="generateDefaultConstructor" value="true"/>
-        <property name="templateName" value="/templates/field/setMutableField.vm" />
+        <property name="templateName" value="/templates/field/setMutableFieldInMethod.vm" />
         <property name="templateProcessor" ref="velocityTemplateProcessor" />
     </bean>
 
     <bean id="addGetters" class="de.steinacker.jcg.transform.type.AddGetters">
         <property name="name" value="AddGetters"/>
-        <property name="templateName" value="/templates/field/getField.vm" />
+        <property name="templateName" value="/templates/field/getFieldInMethod.vm" />
         <property name="templateProcessor" ref="velocityTemplateProcessor" />
     </bean>
 
@@ -114,13 +114,13 @@
 
     <bean id="addSetters" class="de.steinacker.jcg.transform.type.AddSetters">
         <property name="name" value="AddSetters"/>
-        <property name="templateName" value="/templates/field/setField.vm" />
+        <property name="templateName" value="/templates/field/setFieldInMethod.vm" />
         <property name="templateProcessor" ref="velocityTemplateProcessor" />
     </bean>
 
     <bean id="addSettersForMutableTypes" class="de.steinacker.jcg.transform.type.AddSetters">
         <property name="name" value="AddSettersForMutableTypes"/>
-        <property name="templateName" value="/templates/field/setMutableField.vm" />
+        <property name="templateName" value="/templates/field/setMutableFieldInMethod.vm" />
         <property name="templateProcessor" ref="velocityTemplateProcessor" />
     </bean>
 

@@ -77,7 +77,7 @@ public class AddConstructorsTest {
     public void setupTransformer() {
         transformer = new AddConstructors();
         transformer.setName("test");
-        transformer.setTemplateName("/templates/field/setField.vm");
+        transformer.setTemplateName("/templates/field/setFieldInMethod.vm");
         transformer.setTemplateProcessor(new VelocityTemplateProcessor());
     }
 
